@@ -15,6 +15,15 @@
   - `path/to/file2.java`
 - **Description**: {MÔ_TẢ_CHI_TIẾT}
 ```
+## [2026-01-03 15:40:00] - Format and Update ALGORITHMS.md - Business Logic Documentation
+
+- **Model**: GitHub Copilot (Claude Sonnet 4.5)
+- **User**: Danh
+- **Files Modified/Created**:
+  - `.github/instruction/Thuat_toan_BM7_BM15a.md`
+  - `.github/logs/generation-log.md`
+
+- **Description**: Chỉnh lại và chuẩn hóa file ALGORITHMS.md với metadata header comment. Thêm phần Mục đích, Input, Output, Ràng buộc cho mỗi BM. Format lại heading và structure để dễ đọc. Thêm phần RÀNG BUỘC KINH DOANH (QĐ 4, 5, 6) và HẰNG SỐ HỆ THỐNG. Bao gồm 9 biểu mẫu: BM7, BM8, BM9, BM10a, BM10b, BM11, BM12, BM13, BM15a với form UI và thuật toán chi tiết.
 
 ---
 
