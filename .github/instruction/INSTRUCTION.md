@@ -69,6 +69,18 @@ Sau mỗi lần generate code, AI agent phải ghi log vào file `.github/logs/g
 - **Description**: {MÔ_TẢ_CHI_TIẾT}
 ```
 
+**Lấy Timestamp Chính Xác**:
+AI agent phải chạy script `.github/scripts/get_timestamp.py` để lấy thời gian thực tế:
+
+```bash
+python .github/scripts/get_timestamp.py
+# Output: 2026-01-03 11:46:25
+```
+
+Timestamp từ script này sẽ được sử dụng cho cả:
+- Generation log (`generation-log.md`)
+- Code header comment (`Created at`)
+
 ---
 
 ## 📝 Coding Conventions

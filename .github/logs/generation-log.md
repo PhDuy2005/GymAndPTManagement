@@ -35,6 +35,15 @@
 
 <!-- New logs will be added below this line -->
 
+## [2026-01-03 11:46:25] - Add Timestamp Script & Update INSTRUCTION
+- **Model**: GitHub Copilot (Claude Sonnet 4.5)
+- **User**: PhDuy2005
+- **Files Modified/Created**:
+  - `.github/scripts/get_timestamp.py`
+  - `.github/instruction/INSTRUCTION.md`
+  - `.github/logs/generation-log.md`
+- **Description**: Tạo Python script để lấy timestamp chính xác khi generate code. AI agent sẽ chạy script này trước khi ghi log để có timestamp thực tế thay vì ước lượng. Cập nhật INSTRUCTION.md để document quy trình mới.
+
 ## [2026-01-03 18:15:00] - Add Controller Documentation Requirement & Create AuthController Example
 - **Model**: GitHub Copilot (Claude Sonnet 4.5)
 - **User**: PhDuy2005
