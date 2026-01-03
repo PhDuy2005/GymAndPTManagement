@@ -60,21 +60,21 @@
 
 ### 📊 Data Validation
 
-| #   | Algorithm | File | Description                             | Author | Date |
-| --- | --------- | ---- | --------------------------------------- | ------ | ---- |
-| -   | -         | -    | *Chưa có thuật toán trong category này* | -      | -    |
+| #   | Algorithm                    | File                                                                      | Description                               | Author | Date       |
+| --- | ---------------------------- | ------------------------------------------------------------------------- | ----------------------------------------- | ------ | ---------- |
+| 1   | Password Strength Validation | [password-strength-validation.md](./algo/password-strength-validation.md) | Validate password complexity and strength | System | 2026-01-03 |
 
 ### 🔍 Search & Filter
 
-| #   | Algorithm | File | Description                             | Author | Date |
-| --- | --------- | ---- | --------------------------------------- | ------ | ---- |
-| -   | -         | -    | *Chưa có thuật toán trong category này* | -      | -    |
+| #   | Algorithm       | File                                        | Description                                                          | Author | Date       |
+| --- | --------------- | ------------------------------------------- | -------------------------------------------------------------------- | ------ | ---------- |
+| 1   | Search & Filter | [search-filter.md](./algo/search-filter.md) | Case-insensitive search and dynamic filtering with JPA Specification | System | 2026-01-03 |
 
 ### 📄 Pagination
 
-| #   | Algorithm | File | Description                             | Author | Date |
-| --- | --------- | ---- | --------------------------------------- | ------ | ---- |
-| -   | -         | -    | *Chưa có thuật toán trong category này* | -      | -    |
+| #   | Algorithm  | File                                  | Description                              | Author | Date       |
+| --- | ---------- | ------------------------------------- | ---------------------------------------- | ------ | ---------- |
+| 1   | Pagination | [pagination.md](./algo/pagination.md) | Standard pagination with Spring Data JPA | System | 2026-01-03 |
 
 ### 🔄 Business Logic
 
@@ -90,9 +90,9 @@
 
 ### 🛠️ Utilities
 
-| #   | Algorithm | File | Description                             | Author | Date |
-| --- | --------- | ---- | --------------------------------------- | ------ | ---- |
-| -   | -         | -    | *Chưa có thuật toán trong category này* | -      | -    |
+| #   | Algorithm   | File                                    | Description                                              | Author | Date       |
+| --- | ----------- | --------------------------------------- | -------------------------------------------------------- | ------ | ---------- |
+| 1   | Audit Trail | [audit-trail.md](./algo/audit-trail.md) | Auto-populate audit fields using JPA lifecycle callbacks | System | 2026-01-03 |
 
 ### 📦 Other
 
@@ -159,197 +159,5 @@
 ---
 
 **Version**: 2.0 (Refactored)  
-**Last Updated**: 2026-01-03 14:11:05  
+**Last Updated**: 2026-01-03 14:26:08  
 **Maintained by**: Development Team
- * - At least one digit
- * - At least one special character
- */
-public boolean isStrongPassword(String password) {
-    if (password == null || password.length() < 8) {
-        return false;
-    }
-    
-    boolean hasUpper = password.chars().anyMatch(Character::isUpperCase);
-    boolean hasLower = password.chars().anyMatch(Character::isLowerCase);
-    boolean hasDigit = password.chars().anyMatch(Character::isDigit);
-    boolean hasSpecial = password.chars().anyMatch(ch -> "!@#$%^&*()_+-=[]{}|;:,.<>?".indexOf(ch) >= 0);
-    
-    return hasUpper && hasLower && hasDigit && hasSpecial;
-}
-```
-
----
-
-## 🔄 Audit Trail
-
-### 1. Auto-populate Audit Fields
-
-**Trigger**: `@PrePersist` và `@PreUpdate` lifecycle callbacks  
-**Logic**: Tự động điền created_at, updated_at, created_by, updated_by
-
-```java
-@PrePersist
-protected void onCreate() {
-    createdAt = Instant.now();
-    createdBy = SecurityUtil.getCurrentUserLogin().orElse("system");
-    // Additional logic for specific entities
-}
-
-@PreUpdate
-protected void onUpdate() {
-    updatedAt = Instant.now();
-    updatedBy = SecurityUtil.getCurrentUserLogin().orElse("system");
-}
-```
-
-**Lưu ý**:
-- `getCurrentUserLogin()` lấy username từ SecurityContext
-- Fallback về "system" nếu không có user authentication (ví dụ: scheduled tasks)
-
----
-
-## 📄 Pagination
-
-### 1. Standard Pagination
-
-**Default Page Size**: 20  
-**Max Page Size**: 2000  
-**Page Index**: 1-based (page 1 là trang đầu tiên)
-
-```java
-/**
- * Get paginated list
- * @param pageNumber - Trang cần lấy (bắt đầu từ 1)
- * @param pageSize - Số items mỗi trang
- * @return Page object với content và metadata
- */
-public Page<Entity> getPaginatedList(int pageNumber, int pageSize) {
-    // Spring Data JPA uses 0-based index internally
-    Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
-    return repository.findAll(pageable);
-}
-```
-
-**Response Format**:
-```json
-{
-  "content": [...],
-  "pageNumber": 1,
-  "pageSize": 20,
-  "totalElements": 100,
-  "totalPages": 5,
-  "first": true,
-  "last": false
-}
-```
-
----
-
-## 🔍 Search & Filter
-
-### 1. Case-insensitive Search
-
-**Use Case**: Tìm kiếm không phân biệt hoa thường
-
-```java
-/**
- * Search by name (case-insensitive)
- * @param name - Tên cần tìm (không phân biệt hoa thường)
- * @return List of matching entities
- */
-@Query("SELECT e FROM Entity e WHERE LOWER(e.name) LIKE LOWER(CONCAT('%', :name, '%'))")
-List<Entity> searchByNameIgnoreCase(@Param("name") String name);
-```
-
----
-
-### 2. Multiple Criteria Filter
-
-**Use Case**: Lọc theo nhiều điều kiện (AND logic)
-
-```java
-/**
- * Filter with multiple criteria using Specification
- */
-public Page<Entity> filterEntities(FilterCriteria criteria, Pageable pageable) {
-    Specification<Entity> spec = Specification.where(null);
-    
-    if (criteria.getName() != null) {
-        spec = spec.and((root, query, cb) -> 
-            cb.like(cb.lower(root.get("name")), "%" + criteria.getName().toLowerCase() + "%"));
-    }
-    
-    if (criteria.getStatus() != null) {
-        spec = spec.and((root, query, cb) -> 
-            cb.equal(root.get("status"), criteria.getStatus()));
-    }
-    
-    return repository.findAll(spec, pageable);
-}
-```
-
----
-
-## 📝 Template Cho Algorithm Mới
-
-Khi document algorithm mới, sử dụng template sau:
-
-```markdown
-### {Serial}. {Algorithm Name}
-
-**Use Case**: {Mô tả use case}  
-**Complexity**: O({time_complexity}) time, O({space_complexity}) space  
-**Author**: {Người implement}  
-**Date**: {Ngày implement}
-
-**Description**:
-{Mô tả chi tiết thuật toán}
-
-**Pseudocode/Code**:
-```java
-// Code implementation
-```
-
-**Example**:
-```java
-// Usage example
-```
-
-**Edge Cases**:
-- Case 1: {Mô tả}
-- Case 2: {Mô tả}
-
-**Testing Notes**:
-- Test case 1: {Mô tả}
-- Test case 2: {Mô tả}
-
-**Lưu ý**:
-- Lưu ý 1
-- Lưu ý 2
-```
-
----
-
-## 🚨 Lưu Ý Chung
-
-1. **Reusability**: Viết algorithms có thể tái sử dụng, tránh hardcode
-2. **Performance**: Cân nhắc performance, đặc biệt với large datasets
-3. **Security**: Không log sensitive data (passwords, tokens, etc.)
-4. **Error Handling**: Handle edge cases và invalid inputs
-5. **Documentation**: Document rõ ràng input, output, và side effects
-6. **Testing**: Viết unit tests cho critical algorithms
-
----
-
-## 📚 References
-
-- [Spring Security Documentation](https://docs.spring.io/spring-security/reference/index.html)
-- [JWT Best Practices](https://tools.ietf.org/html/rfc8725)
-- [BCrypt Algorithm](https://en.wikipedia.org/wiki/Bcrypt)
-- [JPA Specification](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#specifications)
-
----
-
-**Version**: 1.0  
-**Last Updated**: 2026-01-03  
-**Next Review**: Khi có algorithm mới cần document
