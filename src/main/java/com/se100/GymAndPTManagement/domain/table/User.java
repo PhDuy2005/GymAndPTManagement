@@ -64,7 +64,7 @@ public class User {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = Instant.now();
-        updatedBy = SecurityUtil.getCurrentUserLogin().orElse("system");
+        updatedBy = SecurityUtil.getCurrentUserLogin().orElse("Unverify user");
     }
 
 }
