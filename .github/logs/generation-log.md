@@ -67,3 +67,16 @@
 - **Files Modified/Created**:
   - `src/main/java/com/se100/GymAndPTManagement/domain/table/User.java`
 - **Description**: Thay đổi giá trị mặc định của trường `updatedBy` trong method `@PreUpdate` của entity User từ "system" thành "Unverify user" khi không có user trong SecurityContext.
+
+---
+
+## [2026-01-03 14:11:05] - Restructure ALGORITHMS.md - Create Index & Algorithm Files
+- **Model**: GitHub Copilot (Claude Sonnet 4.5)
+- **User**: PhDuy2005
+- **Files Modified/Created**:
+  - `.github/instruction/ALGORITHMS.md`
+  - `.github/instruction/algo/password-hashing.md`
+  - `.github/instruction/algo/jwt-token-generation.md`
+  - `.github/instruction/algo/permission-check.md`
+  - `.github/instruction/algo/TEMPLATE.md`
+- **Description**: Restructure ALGORITHMS.md thành file index/navigation. Tạo folder `.github/instruction/algo/` và tách 3 thuật toán hiện có thành file riêng. Tạo TEMPLATE.md cho việc thêm thuật toán mới. Cập nhật quy trình: khi người dùng upload file thuật toán, AI sẽ tạo file mới theo template, cập nhật index, giữ nguyên file gốc, và có thể nêu quan ngại về thuật toán.

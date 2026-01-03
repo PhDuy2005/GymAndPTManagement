@@ -1,203 +1,166 @@
-# ⚙️ Algorithms & Business Logic Documentation
+# ⚙️ Algorithms & Business Logic - Index
 
-> Tài liệu này mô tả chi tiết các thuật toán và business logic được sử dụng trong dự án.
+> File này là danh mục tổng hợp tất cả các thuật toán và business logic trong dự án. Mỗi thuật toán có file riêng trong folder `algo/`.
 
 ---
 
 ## 📋 Nguyên Tắc
 
-1. **Kiểm tra trước khi implement**: Luôn kiểm tra file này trước khi viết thuật toán mới
+### Quy Tắc Chung
+1. **Kiểm tra trước khi implement**: Luôn kiểm tra danh mục này trước khi viết thuật toán mới
 2. **Tái sử dụng**: Nếu đã có thuật toán tương tự, sử dụng lại thay vì viết mới
-3. **Document sau khi implement**: Mọi thuật toán mới phải được document vào file này
-4. **Clear naming**: Đặt tên thuật toán rõ ràng, dễ tìm kiếm
+3. **Document sau khi implement**: Mọi thuật toán mới phải được document vào file riêng
+4. **Clear naming**: Đặt tên file thuật toán rõ ràng, dễ tìm kiếm (kebab-case)
 
----
+### Quy Trình Khi Upload Thuật Toán Mới
 
-## 🔐 Authentication & Authorization
+⚠️ **Khi người dùng upload file thuật toán**, AI agent được phép:
 
-### 1. Password Hashing
+1. **Tạo file mới theo template**: Sử dụng [TEMPLATE.md](./algo/TEMPLATE.md)
+2. **Cập nhật file index này**: Thêm link vào danh mục phù hợp
+3. **Giữ nguyên file gốc**: KHÔNG chỉnh sửa file người dùng upload
+4. **Review và feedback**: Nêu quan ngại về thuật toán nếu có:
+   - Security issues
+   - Performance problems
+   - Best practice violations
+   - Compatibility issues
 
-**Algorithm**: BCrypt  
-**Strength**: 10 rounds (default)  
-**Usage**: Mã hóa password trước khi lưu vào database
+**Format feedback**:
+```markdown
+## ⚠️ Review Notes - {Algorithm Name}
 
-```java
-/**
- * Hash password using BCrypt
- * @param plainPassword - Password người dùng nhập vào
- * @return Hashed password
- */
-public String hashPassword(String plainPassword) {
-    PasswordEncoder encoder = new BCryptPasswordEncoder();
-    return encoder.encode(plainPassword);
-}
+**Reviewer**: {AI Model Name}
+**Date**: {Date}
 
-/**
- * Verify password
- * @param plainPassword - Password người dùng nhập vào
- * @param hashedPassword - Password đã hash trong database
- * @return true nếu match, false nếu không match
- */
-public boolean verifyPassword(String plainPassword, String hashedPassword) {
-    PasswordEncoder encoder = new BCryptPasswordEncoder();
-    return encoder.matches(plainPassword, hashedPassword);
-}
-```
+### Concerns:
+- ⚠️ {Concern 1}
+- ⚠️ {Concern 2}
 
-**Lưu ý**:
-- Không bao giờ lưu plain text password
-- Không log password (plain hoặc hashed)
-- Sử dụng PasswordEncoder bean đã config trong SecurityConfiguration
+### Suggestions:
+- 💡 {Suggestion 1}
+- 💡 {Suggestion 2}
 
----
-
-### 2. JWT Token Generation
-
-**Algorithm**: HS256 (HMAC with SHA-256)  
-**Access Token Expiration**: 10 days (864000 seconds)  
-**Refresh Token Expiration**: 10 days (864000 seconds)
-
-```java
-/**
- * Generate Access Token
- * Claims:
- * - subject: user email
- * - user: {id, email, name}
- * - permission: array of permission names
- */
-public String createAccessToken(String email, ResLoginDTO dto) {
-    ResLoginDTO.UserInsideToken userInsideToken = new ResLoginDTO.UserInsideToken();
-    userInsideToken.setId(dto.getUser().getId());
-    userInsideToken.setEmail(dto.getUser().getEmail());
-    userInsideToken.setName(dto.getUser().getName());
-
-    Instant now = Instant.now();
-    Instant expirationTime = now.plusSeconds(accessTokenExpiration);
-
-    // Get permissions from user's role
-    List<String> listAuthorities = new ArrayList<>();
-    if (dto.getUser().getRole() != null && dto.getUser().getRole().getPermissions() != null) {
-        listAuthorities = dto.getUser().getRole().getPermissions().stream()
-                .map(permission -> permission.getName())
-                .toList();
-    }
-
-    JwtClaimsSet claims = JwtClaimsSet.builder()
-            .issuedAt(now)
-            .expiresAt(expirationTime)
-            .subject(email)
-            .claim("user", userInsideToken)
-            .claim("permission", listAuthorities)
-            .build();
-
-    JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
-    return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
-}
-```
-
-**Refresh Token**:
-- Tương tự Access Token nhưng không chứa permissions
-- Chỉ chứa thông tin user cơ bản (id, email, name)
-- Dùng để renew access token khi hết hạn
-
-**Lưu ý**:
-- Access token chứa permissions để authorization
-- Refresh token không chứa permissions (chỉ dùng để renew)
-- Validate expiration time trước khi sử dụng token
-
----
-
-### 3. Permission Check Algorithm
-
-**Logic**: Kiểm tra user có permission cụ thể không
-
-```java
-/**
- * Check if current user has specific authority
- * @param authority - Permission name cần kiểm tra
- * @return true nếu có permission, false nếu không
- */
-public static boolean hasCurrentUserThisAuthority(String authority) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    return authentication != null && 
-           getAuthorities(authentication).anyMatch(auth -> auth.equals(authority));
-}
-
-/**
- * Check if current user has any of the authorities
- * @param authorities - Array of permission names
- * @return true nếu có ít nhất 1 permission, false nếu không có
- */
-public static boolean hasCurrentUserAnyOfAuthorities(String... authorities) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    return authentication != null && 
-           getAuthorities(authentication).anyMatch(authority -> 
-               Arrays.asList(authorities).contains(authority));
-}
-```
-
-**Usage**:
-```java
-// Check single permission
-if (SecurityUtil.hasCurrentUserThisAuthority("USER_CREATE")) {
-    // Allow create user
-}
-
-// Check multiple permissions (OR logic)
-if (SecurityUtil.hasCurrentUserAnyOfAuthorities("USER_UPDATE", "ADMIN")) {
-    // Allow if user has either USER_UPDATE or ADMIN permission
-}
+### Approval Status:
+- [ ] Approved without changes
+- [x] Approved with suggestions
+- [ ] Needs revision
 ```
 
 ---
 
-## 📊 Data Validation
+## 📚 Danh Mục Thuật Toán
 
-### 1. Email Validation
+### 🔐 Authentication & Authorization
 
-**Pattern**: Standard RFC 5322 email format  
-**Implementation**: Jakarta Validation `@Email` annotation
+| #   | Algorithm            | File                                                      | Description                                  | Author | Date       |
+| --- | -------------------- | --------------------------------------------------------- | -------------------------------------------- | ------ | ---------- |
+| 1   | Password Hashing     | [password-hashing.md](./algo/password-hashing.md)         | BCrypt password hashing and verification     | System | 2026-01-03 |
+| 2   | JWT Token Generation | [jwt-token-generation.md](./algo/jwt-token-generation.md) | Generate access & refresh tokens using HS256 | System | 2026-01-03 |
+| 3   | Permission Check     | [permission-check.md](./algo/permission-check.md)         | Check user permissions from SecurityContext  | System | 2026-01-03 |
 
-```java
-@Email(message = "Email không đúng định dạng")
-@NotBlank(message = "Email không được để trống")
-private String email;
-```
+### 📊 Data Validation
 
-**Additional Check**: Email uniqueness
-```java
-/**
- * Check if email already exists
- * @param email - Email cần kiểm tra
- * @return true nếu email đã tồn tại, false nếu chưa
- */
-public boolean isEmailExists(String email) {
-    return userRepository.existsByEmail(email);
-}
-```
+| #   | Algorithm | File | Description                             | Author | Date |
+| --- | --------- | ---- | --------------------------------------- | ------ | ---- |
+| -   | -         | -    | *Chưa có thuật toán trong category này* | -      | -    |
+
+### 🔍 Search & Filter
+
+| #   | Algorithm | File | Description                             | Author | Date |
+| --- | --------- | ---- | --------------------------------------- | ------ | ---- |
+| -   | -         | -    | *Chưa có thuật toán trong category này* | -      | -    |
+
+### 📄 Pagination
+
+| #   | Algorithm | File | Description                             | Author | Date |
+| --- | --------- | ---- | --------------------------------------- | ------ | ---- |
+| -   | -         | -    | *Chưa có thuật toán trong category này* | -      | -    |
+
+### 🔄 Business Logic
+
+| #   | Algorithm | File | Description                             | Author | Date |
+| --- | --------- | ---- | --------------------------------------- | ------ | ---- |
+| -   | -         | -    | *Chưa có thuật toán trong category này* | -      | -    |
+
+### 🧮 Calculations
+
+| #   | Algorithm | File | Description                             | Author | Date |
+| --- | --------- | ---- | --------------------------------------- | ------ | ---- |
+| -   | -         | -    | *Chưa có thuật toán trong category này* | -      | -    |
+
+### 🛠️ Utilities
+
+| #   | Algorithm | File | Description                             | Author | Date |
+| --- | --------- | ---- | --------------------------------------- | ------ | ---- |
+| -   | -         | -    | *Chưa có thuật toán trong category này* | -      | -    |
+
+### 📦 Other
+
+| #   | Algorithm | File | Description                             | Author | Date |
+| --- | --------- | ---- | --------------------------------------- | ------ | ---- |
+| -   | -         | -    | *Chưa có thuật toán trong category này* | -      | -    |
 
 ---
 
-### 2. Password Strength Validation
+## ➕ Thêm Thuật Toán Mới
 
-**Minimum Requirements**:
-- Độ dài: Ít nhất 8 ký tự
-- Có thể thêm requirements sau: chữ hoa, chữ thường, số, ký tự đặc biệt
+### Quy Trình
 
-```java
-@NotBlank(message = "Mật khẩu không được để trống")
-@Size(min = 8, message = "Mật khẩu phải có ít nhất 8 ký tự")
-private String password;
-```
+1. **Kiểm tra duplicate**: Tìm trong danh mục xem đã có thuật toán tương tự chưa
+2. **Chọn category**: Xác định thuật toán thuộc category nào
+3. **Tạo file mới**: 
+   - Copy [TEMPLATE.md](./algo/TEMPLATE.md)
+   - Đặt tên file: `{algorithm-name}.md` (kebab-case)
+   - Điền đầy đủ thông tin theo template
+4. **Cập nhật index**: Thêm entry vào bảng category tương ứng trong file này
+5. **Ghi log**: Ghi vào [generation-log.md](../logs/generation-log.md)
 
-**Custom Validation** (nếu cần thêm requirements):
-```java
-/**
- * Validate password strength
- * Requirements:
- * - At least 8 characters
- * - At least one uppercase letter
- * - At least one lowercase letter
+### Naming Convention
+
+**File name**: `{algorithm-name}.md`
+- Sử dụng kebab-case
+- Mô tả rõ ràng, ngắn gọn
+- Ví dụ: `password-hashing.md`, `jwt-token-generation.md`, `email-validation.md`
+
+---
+
+## 🔍 Tìm Kiếm Thuật Toán
+
+### Theo Category
+- Xem bảng category tương ứng ở trên
+
+### Theo Keyword
+- Sử dụng Ctrl+F trong file này
+- Hoặc search trong folder `algo/`
+
+### Theo Use Case
+- Xem mô tả (Description column) trong các bảng category
+
+---
+
+## 📖 Template & Guidelines
+
+- **Template**: [algo/TEMPLATE.md](./algo/TEMPLATE.md)
+- **Coding Standards**: [INSTRUCTION.md](./INSTRUCTION.md)
+- **API Format**: [API_RESPONSE_FORMAT.md](./API_RESPONSE_FORMAT.md)
+- **Database Schema**: [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)
+
+---
+
+## 🚨 Lưu Ý Quan Trọng
+
+1. **Không duplicate**: Kiểm tra kỹ trước khi tạo thuật toán mới
+2. **Document đầy đủ**: Theo đúng template, bao gồm examples và tests
+3. **Security first**: Luôn xem xét security implications
+4. **Performance**: Document complexity và performance notes
+5. **Maintainability**: Code phải dễ hiểu, dễ maintain
+6. **Testing**: Luôn có test cases và edge cases
+
+---
+
+**Version**: 2.0 (Refactored)  
+**Last Updated**: 2026-01-03 14:11:05  
+**Maintained by**: Development Team
  * - At least one digit
  * - At least one special character
  */
