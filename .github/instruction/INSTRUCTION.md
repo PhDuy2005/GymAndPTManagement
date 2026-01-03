@@ -231,7 +231,25 @@ public ResponseEntity<ResUserDTO> getUserById(@PathVariable Long id) {
 
 ## 🏗️ Code Generation Rules
 
-### 1. Generate Controller - Service - Repository
+### 1. Controller Documentation (BẮT BUỘC)
+
+⚠️ **BẮT BUỘC**: Khi generate Controller, phải tạo file documentation đi kèm.
+
+**Quy tắc**:
+1. Mỗi Controller phải có 1 file `.md` riêng trong folder `.github/instruction/controller-example/`
+2. Tên file: `{ControllerName}.md` (ví dụ: `AuthController.md`, `UserController.md`)
+3. File phải bao gồm:
+   - Mô tả chức năng của Controller
+   - Danh sách endpoints với request/response examples
+   - Request body examples (nếu có)
+   - Response examples (success & error)
+   - Các exception có thể xảy ra
+
+**Template**: Xem file [controller-example/AuthController.md](./controller-example/AuthController.md)
+
+---
+
+### 2. Generate Controller - Service - Repository
 
 Khi được yêu cầu generate bộ **Controller - Service - Repository**:
 
@@ -240,6 +258,7 @@ Khi được yêu cầu generate bộ **Controller - Service - Repository**:
 - Thực hiện **Dependency Injection**
 - Khai báo interface methods (không có implementation)
 - Thêm annotations cần thiết (`@RestController`, `@Service`, `@Repository`, etc.)
+- **Tạo file documentation** cho Controller (bắt buộc)
 
 #### ❌ KHÔNG ĐƯỢC PHÉP:
 - Gợi ý các hàm/method nào cần có

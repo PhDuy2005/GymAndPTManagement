@@ -35,6 +35,15 @@
 
 <!-- New logs will be added below this line -->
 
+## [2026-01-03 18:15:00] - Add Controller Documentation Requirement & Create AuthController Example
+- **Model**: GitHub Copilot (Claude Sonnet 4.5)
+- **User**: PhDuy2005
+- **Files Modified/Created**:
+  - `.github/instruction/INSTRUCTION.md`
+  - `.github/instruction/controller-example/AuthController.md`
+  - `.github/logs/generation-log.md`
+- **Description**: Thêm yêu cầu bắt buộc: mỗi Controller phải có file .md documentation trong folder `.github/instruction/controller-example/`. Tạo file mẫu AuthController.md với đầy đủ endpoints (login, register, refresh, logout), request/response examples, DTOs, và exceptions.
+
 ## [2026-01-03 18:00:00] - Update INSTRUCTION - User Identification & Model Name Format
 - **Model**: GitHub Copilot (Claude Sonnet 4.5)
 - **User**: PhDuy2005
