@@ -35,7 +35,7 @@ public class Permission {
 
     private String module;
 
-    @ManyToMany(mappedBy = "permissions")
+    @ManyToMany(mappedBy = "permissions", fetch = FetchType.LAZY)
     private Set<Role> roles;
 
     // Audit fields

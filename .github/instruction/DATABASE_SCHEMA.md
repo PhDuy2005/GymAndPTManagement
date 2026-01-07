@@ -61,18 +61,34 @@ protected void onUpdate() {
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long id;
 
-    @Column(name = "name", length = 100)
-    private String name;
+    @NotBlank(message = "Không được để trống mật khẩu")
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
+
+    @Column(name = "fullname", length = 100)
+    private String fullname;
     
     @NotBlank(message = "Không được để trống email")
     @Column(name = "email", nullable = false, unique = true, length = 150)
     private String email;
-    
-    @NotBlank(message = "Không được để trống mật khẩu")
-    @Column(name = "password", nullable = false)
-    private String password;
+
+    @Column(name = "phone_number", length = 15)
+    private String phoneNumber;
+
+    @Column(name = "status", length = 20)
+    private String status;
+
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
+
+    @Column(name = "dob")
+    private LocalDate dob;
+
+    @Column(name = "gender", length = 10)
+    private String gender;
 
     // Relationship: n User -> 1 Role
     @ManyToOne
@@ -107,18 +123,23 @@ public class User {
 ```
 
 **Columns**:
-- `id`: BIGINT, Primary Key, Auto Increment
-- `name`: VARCHAR(100), Nullable
+- `user_id`: BIGINT, Primary Key, Auto Increment
+- `password_hash`: VARCHAR(255), Not Null (bcrypt hashed)
+- `fullname`: VARCHAR(100), Nullable
 - `email`: VARCHAR(150), Not Null, Unique
-- `password`: VARCHAR(255), Not Null (bcrypt hashed)
+- `phone_number`: VARCHAR(15), Nullable
 - `role_id`: BIGINT, Foreign Key -> roles(id)
+- `status`: VARCHAR(20), Nullable (ACTIVE, INACTIVE, SUSPENDED)
+- `avatar_url`: VARCHAR(500), Nullable
+- `dob`: DATE, Nullable (Date of birth)
+- `gender`: VARCHAR(10), Nullable (MALE, FEMALE, OTHER)
 - `created_at`: TIMESTAMP, Not Null
 - `updated_at`: TIMESTAMP, Nullable
 - `created_by`: VARCHAR(100), Nullable
 - `updated_by`: VARCHAR(100), Nullable
 
 **Indexes**:
-- PRIMARY KEY: `id`
+- PRIMARY KEY: `user_id`
 - UNIQUE INDEX: `email`
 - INDEX: `role_id`
 
@@ -427,7 +448,7 @@ public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id")
-    private Long memberId;
+    private Long id;
 
     // Relationship: 1:1 with User
     @OneToOne
@@ -502,7 +523,7 @@ public class PersonalTrainer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "pt_id")
-    private Long ptId;
+    private Long id;
 
     // Relationship: 1:1 with User
     @OneToOne
@@ -589,7 +610,7 @@ public class ServicePackage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "package_id")
-    private Long packageId;
+    private Long id;
 
     @Column(name = "package_name", nullable = false, length = 255)
     private String packageName;
@@ -661,7 +682,7 @@ public class AdditionalService {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "additional_service_id")
-    private Long additionalServiceId;
+    private Long id;
 
     @Column(name = "name", nullable = false, length = 255)
     private String name;
@@ -726,7 +747,7 @@ public class Contract {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "contract_id")
-    private Long contractId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "member_id", nullable = false)
@@ -814,7 +835,7 @@ public class Slot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "slot_id")
-    private Long slotId;
+    private Long id;
 
     @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
@@ -875,7 +896,7 @@ public class AvailableSlot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "available_slot_id")
-    private Long availableSlotId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "pt_id", nullable = false)
@@ -949,7 +970,7 @@ public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "booking_id")
-    private Long bookingId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "contract_id", nullable = false)
@@ -1026,7 +1047,7 @@ public class CheckinLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "checkin_id")
-    private Long checkinId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "member_id", nullable = false)
@@ -1101,7 +1122,7 @@ public class BodyMetrics {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "metric_id")
-    private Long metricId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "member_id", nullable = false)
@@ -1183,7 +1204,7 @@ public class Invoice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "invoice_id")
-    private Long invoiceId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "member_id", nullable = false)
@@ -1265,7 +1286,7 @@ public class InvoiceDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "detail_id")
-    private Long detailId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "invoice_id", nullable = false)
@@ -1345,7 +1366,7 @@ public class DailyDiet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "diet_id")
-    private Long dietId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "member_id", nullable = false)
@@ -1420,7 +1441,7 @@ public class Food {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "food_id")
-    private Long foodId;
+    private Long id;
 
     @Column(name = "name", nullable = false, length = 255)
     private String name;
@@ -1588,7 +1609,7 @@ public class WorkoutDevice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "device_id")
-    private Long deviceId;
+    private Long id;
 
     @Column(name = "name", nullable = false, length = 255)
     private String name;
@@ -1661,7 +1682,7 @@ public class Workout {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "workout_id")
-    private Long workoutId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "pt_id")
@@ -1732,7 +1753,7 @@ public class WorkoutImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "image_id")
-    private Long imageId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "workout_id", nullable = false)
