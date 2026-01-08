@@ -181,8 +181,6 @@ public class MemberService {
             user.setGender(request.getGender());
         }
 
-        member.setUser(user);
-
         System.out.println(">>>MEMBER SERVICE - UPDATE MEMBER: User information updated.");
 
         // Cập nhật thông tin Member

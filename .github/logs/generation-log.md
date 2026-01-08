@@ -44,6 +44,30 @@
 
 <!-- New logs will be added below this line -->
 
+## [2026-01-08 11:20:37] - Create PersonalTrainer Repository, Service, Controller & DTOs
+- **Model**: GitHub Copilot (Claude Sonnet 4.5)
+- **User**: PhDuy2005
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/repository/PersonalTrainerRepository.java`
+  - `src/main/java/com/se100/GymAndPTManagement/service/PersonalTrainerService.java`
+  - `src/main/java/com/se100/GymAndPTManagement/controller/PersonalTrainerController.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/requestDTO/ReqCreatePTDTO.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/requestDTO/ReqUpdatePTDTO.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/responseDTO/ResPTDTO.java`
+- **Description**: Tạo đầy đủ Repository-Service-Controller cho PersonalTrainer. PersonalTrainerRepository extends JpaRepository với findByUserId(). PersonalTrainerService implement business logic: createPT() (@Transactional tạo User+PT đồng thời, password default "12345678", validate email unique), getAllPTs(), getAllActivePTs(), getPTById(), getPTByEmail(), updatePT() (update cả User và PT fields), deletePT() (soft delete - chuyển User.status và PT.status = INACTIVE). Tạo ReqCreatePTDTO với validation đầy đủ (fullname, email, dob required; password optional min 8 chars; experienceYears >= 0). ReqUpdatePTDTO với tất cả fields optional. ResPTDTO bao gồm nested ResUserDTO. PersonalTrainerController REST endpoints: POST /api/v1/pts, GET /api/v1/pts, GET /api/v1/pts/active, GET /api/v1/pts/search (by ptId or email), PUT /api/v1/pts/{id}, DELETE /api/v1/pts/{id}.
+
+---
+
+## [2026-01-08 04:00:20] - Create PersonalTrainer Entity
+- **Model**: GitHub Copilot (Claude Sonnet 4.5)
+- **User**: PhDuy2005
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/domain/table/PersonalTrainer.java`
+  - `src/main/java/com/se100/GymAndPTManagement/util/enums/PTStatusEnum.java`
+- **Description**: Tạo PersonalTrainer entity theo schema trong DATABASE_SCHEMA.md. Entity có relationship 1:1 với User (FetchType.LAZY), các trường: about (TEXT), specialization, certifications (TEXT), experience_years, rating (DECIMAL 3,2), status (enum: AVAILABLE, BUSY, INACTIVE), note (TEXT). Tạo PTStatusEnum với 3 giá trị. Thêm database indexes trên user_id, status, và rating. Default values trong @PrePersist: rating = 0, status = AVAILABLE, experienceYears = 0. Đầy đủ audit fields với @PrePersist và @PreUpdate hooks.
+
+---
+
 ## [2026-01-08 03:33:51] - Optimize Database Performance - Add FetchType.LAZY & Indexes
 - **Model**: GitHub Copilot (Claude Sonnet 4.5)
 - **User**: PhDuy2005

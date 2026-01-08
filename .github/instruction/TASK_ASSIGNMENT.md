@@ -50,16 +50,16 @@
 - [X] Validation
 
 #### 2. Personal Trainer Entity (Ưu tiên cao)
-- [ ] Entity class (`domain/table/PersonalTrainer.java`)
-- [ ] Repository (`repository/PersonalTrainerRepository.java`)
-- [ ] Service class
-- [ ] Request/Response DTOs
-- [ ] REST Controller với CRUD operations
-- [ ] Validation
+- [X] Entity class (`domain/table/PersonalTrainer.java`)
+- [X] Repository (`repository/PersonalTrainerRepository.java`)
+- [X] Service class
+- [X] Request/Response DTOs
+- [X] REST Controller với CRUD operations
+- [X] Validation
 
 ### ✅ CHECKPOINT 2 - Ngày 2
 #### 3. Service Package Entity
-- [ ] Entity class (`domain/table/ServicePackage.java`)
+- [~] Entity class (`domain/table/ServicePackage.java`)
 - [ ] Repository
 - [ ] Service layer
 - [ ] DTOs
