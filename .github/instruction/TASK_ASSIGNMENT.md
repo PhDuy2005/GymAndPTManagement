@@ -20,30 +20,46 @@
 
 ## 👥 PHÂN CÔNG CHO 3 THÀNH VIÊN
 
+### 📌 Cách Đánh Dấu Trạng Thái Task
+
+**Markdown Checkbox Syntax**:
+- `- [ ]` : Chưa làm (Not started)
+- `- [~]` : Đang làm (In progress) 
+- `- [x]` : Đã hoàn thành (Completed)
+
+**Ví dụ**:
+```markdown
+- [x] Entity class (`domain/table/Member.java`) ✅ Đã xong
+- [~] Repository (`repository/MemberRepository.java`) 🔄 Đang làm
+- [ ] Service class ⏳ Chưa làm
+```
+
+**Lưu ý**: Khi commit, nhớ cập nhật trạng thái checkbox trong file này để team biết tiến độ!
+
 ---
 
 ## 🟦 **THÀNH VIÊN 1** - User & Service Management (7 entities)
 
 ### ✅ CHECKPOINT 1 - Ngày 1
 #### 1. Member Entity (Ưu tiên cao)
-- [ ] Entity class (`domain/table/Member.java`)
-- [ ] Repository (`repository/MemberRepository.java`)
-- [ ] Service class
-- [ ] Request/Response DTOs
-- [ ] REST Controller với CRUD operations
-- [ ] Validation
+- [X] Entity class (`domain/table/Member.java`)
+- [X] Repository (`repository/MemberRepository.java`)
+- [X] Service class
+- [X] Request/Response DTOs
+- [X] REST Controller với CRUD operations
+- [X] Validation
 
 #### 2. Personal Trainer Entity (Ưu tiên cao)
-- [ ] Entity class (`domain/table/PersonalTrainer.java`)
-- [ ] Repository (`repository/PersonalTrainerRepository.java`)
-- [ ] Service class
-- [ ] Request/Response DTOs
-- [ ] REST Controller với CRUD operations
-- [ ] Validation
+- [X] Entity class (`domain/table/PersonalTrainer.java`)
+- [X] Repository (`repository/PersonalTrainerRepository.java`)
+- [X] Service class
+- [X] Request/Response DTOs
+- [X] REST Controller với CRUD operations
+- [X] Validation
 
 ### ✅ CHECKPOINT 2 - Ngày 2
 #### 3. Service Package Entity
-- [ ] Entity class (`domain/table/ServicePackage.java`)
+- [~] Entity class (`domain/table/ServicePackage.java`)
 - [ ] Repository
 - [ ] Service layer
 - [ ] DTOs
