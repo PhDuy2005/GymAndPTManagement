@@ -2,6 +2,9 @@ package com.se100.GymAndPTManagement.controller;
 
 import java.util.List;
 
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,9 +20,16 @@ import org.springframework.web.bind.annotation.RestController;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreatePTDTO;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdatePTDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResPTDTO;
+import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
+import com.se100.GymAndPTManagement.domain.table.PersonalTrainer;
 import com.se100.GymAndPTManagement.service.PersonalTrainerService;
 import com.se100.GymAndPTManagement.util.annotation.ApiMessage;
+import com.turkraft.springfilter.boot.Filter;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 
 /**
@@ -38,6 +48,12 @@ public class PersonalTrainerController {
         this.ptService = ptService;
     }
 
+    @Operation(summary = "Create new personal trainer")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Personal trainer created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @PostMapping
     @ApiMessage("Tạo Personal Trainer mới")
     public ResponseEntity<ResPTDTO> createPT(@Valid @RequestBody ReqCreatePTDTO request) {
@@ -45,6 +61,11 @@ public class PersonalTrainerController {
         return ResponseEntity.status(HttpStatus.CREATED).body(pt);
     }
 
+    @Operation(summary = "Get all personal trainers")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @GetMapping
     @ApiMessage("Lấy danh sách các Personal Trainer")
     public ResponseEntity<List<ResPTDTO>> getAllPTs() {
@@ -52,6 +73,25 @@ public class PersonalTrainerController {
         return ResponseEntity.ok(pts);
     }
 
+    @Operation(summary = "Fetch personal trainers with filter and pagination")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    @GetMapping("/fetch")
+    @ApiMessage("Fetch personal trainers with filter")
+    public ResponseEntity<ResultPaginationDTO> fetchPTsWithFilter(
+            @Parameter(name = "filter", description = "Spring-Filter expression. VD: name=='Yoga' and active==true", required = false, example = "name=='Yoga' and active==true") @Filter Specification<PersonalTrainer> specification,
+            @ParameterObject Pageable pageable) {
+        ResultPaginationDTO pts = ptService.handleFetchPTs(specification, pageable);
+        return ResponseEntity.ok(pts);
+    }
+
+    @Operation(summary = "Get all active personal trainers")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @GetMapping("/active")
     @ApiMessage("Lấy danh sách các Personal Trainer đang hoạt động")
     public ResponseEntity<List<ResPTDTO>> getAllActivePTs() {
@@ -59,6 +99,13 @@ public class PersonalTrainerController {
         return ResponseEntity.ok(pts);
     }
 
+    @Operation(summary = "Search personal trainer by ID or email")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "404", description = "Personal trainer not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "400", description = "Invalid search parameters")
+    })
     @GetMapping("/search")
     @ApiMessage("Lấy Personal Trainer theo ID hoặc email")
     public ResponseEntity<ResPTDTO> searchPT(
@@ -80,6 +127,13 @@ public class PersonalTrainerController {
         return ResponseEntity.ok(pt);
     }
 
+    @Operation(summary = "Update personal trainer information")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Personal trainer updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Personal trainer not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @PutMapping("/{id}")
     @ApiMessage("Cập nhật thông tin Personal Trainer")
     public ResponseEntity<ResPTDTO> updatePT(
@@ -89,6 +143,12 @@ public class PersonalTrainerController {
         return ResponseEntity.ok(pt);
     }
 
+    @Operation(summary = "Delete personal trainer (set status to INACTIVE)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Personal trainer deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Personal trainer not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @DeleteMapping("/{id}")
     @ApiMessage("Xóa Personal Trainer (chuyển trạng thái thành INACTIVE)")
     public ResponseEntity<Void> deletePT(@PathVariable("id") Long ptId) {
@@ -96,6 +156,12 @@ public class PersonalTrainerController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Activate personal trainer (set status to AVAILABLE)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Personal trainer activated successfully"),
+            @ApiResponse(responseCode = "404", description = "Personal trainer not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @PutMapping("/{id}/go-available")
     @ApiMessage("Kích hoạt lại Personal Trainer (chuyển trạng thái thành AVAILABLE)")
     public ResponseEntity<ResPTDTO> activatePT(@PathVariable("id") Long ptId) {
@@ -103,6 +169,12 @@ public class PersonalTrainerController {
         return ResponseEntity.ok(pt);
     }
 
+    @Operation(summary = "Set personal trainer status to BUSY")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Personal trainer status updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Personal trainer not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @PutMapping("/{id}/go-busy")
     @ApiMessage("Đặt trạng thái Personal Trainer thành BUSY")
     public ResponseEntity<ResPTDTO> setBusyPT(@PathVariable("id") Long ptId) {

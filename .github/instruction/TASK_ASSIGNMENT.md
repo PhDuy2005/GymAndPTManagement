@@ -67,7 +67,7 @@
 - [X] Business logic: activate/deactivate packages
 
 #### 4. Additional Service Entity
-- [ ] Entity class (`domain/table/AdditionalService.java`)
+- [X] Entity class (`domain/table/AdditionalService.java`)
 - [ ] Repository
 - [ ] Service layer
 - [ ] DTOs

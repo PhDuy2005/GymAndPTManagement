@@ -5,6 +5,9 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,11 +24,18 @@ import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateServicePackageDTO
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateServicePackageDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResServicePackageDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.RestResponse;
+import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
+import com.se100.GymAndPTManagement.domain.table.ServicePackage;
 import com.se100.GymAndPTManagement.service.ServicePackageService;
 import com.se100.GymAndPTManagement.util.FormatRestResponse;
 import com.se100.GymAndPTManagement.util.annotation.ApiMessage;
 import com.se100.GymAndPTManagement.util.enums.PackageTypeEnum;
+import com.turkraft.springfilter.boot.Filter;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -43,6 +53,12 @@ public class ServicePackageController {
     private final ServicePackageService servicePackageService;
     Logger logger = LoggerFactory.getLogger(ServicePackageController.class);
 
+    @Operation(summary = "Create new service package")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Service package created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @PostMapping
     @ApiMessage("Create new service package") // approved
     public ResponseEntity<ResServicePackageDTO> createServicePackage(
@@ -55,6 +71,11 @@ public class ServicePackageController {
                 .body(createdPackage);
     }
 
+    @Operation(summary = "Get all service packages")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @GetMapping
     @ApiMessage("Get all service packages") // approved
     public ResponseEntity<List<ResServicePackageDTO>> getAllServicePackages() {
@@ -63,6 +84,27 @@ public class ServicePackageController {
         return ResponseEntity.ok(packages);
     }
 
+    @Operation(summary = "Fetch service packages with filter and pagination")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    @GetMapping("/fetch")
+    @ApiMessage("Fetch service packages with filter")
+    public ResponseEntity<ResultPaginationDTO> fetchServicePackagesWithFilter(
+            @Parameter(name = "filter", description = "Spring-Filter expression. VD: name=='Yoga' and active==true", required = false, example = "name=='Yoga' and active==true") @Filter Specification<ServicePackage> specification,
+            @ParameterObject Pageable pageable) {
+        ResultPaginationDTO packages = servicePackageService.handleFetchServicePackages(specification, pageable);
+        logger.info(">>SERVICE PACKAGE CONTROLLER: Fetched service packages with pagination, page: {}, size: {}",
+                pageable.getPageNumber() + 1, pageable.getPageSize());
+        return ResponseEntity.ok(packages);
+    }
+
+    @Operation(summary = "Get all active service packages")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @GetMapping("/active")
     @ApiMessage("Get all active service packages") // approved
     public ResponseEntity<List<ResServicePackageDTO>> getAllActiveServicePackages() {
@@ -71,6 +113,11 @@ public class ServicePackageController {
         return ResponseEntity.ok(packages);
     }
 
+    @Operation(summary = "Get service packages by type")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @GetMapping("/type/{type}")
     @ApiMessage("Get service packages by type") // approved
     public ResponseEntity<List<ResServicePackageDTO>> getServicePackagesByType(
@@ -84,6 +131,12 @@ public class ServicePackageController {
         return ResponseEntity.ok(packages);
     }
 
+    @Operation(summary = "Get service package by ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "404", description = "Service package not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @GetMapping("/{id}")
     @ApiMessage("Get service package by ID") // approved
     public ResponseEntity<ResServicePackageDTO> getServicePackageById(@PathVariable(value = "id") Long id) {
@@ -92,6 +145,13 @@ public class ServicePackageController {
         return ResponseEntity.ok(servicePackage);
     }
 
+    @Operation(summary = "Search service package by name")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "404", description = "Service package not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "400", description = "Invalid search parameters")
+    })
     @GetMapping("/search")
     @ApiMessage("Search service package by name") // approved
     public ResponseEntity<ResServicePackageDTO> searchServicePackage(
@@ -106,6 +166,13 @@ public class ServicePackageController {
         throw new IllegalArgumentException("Package name is required");
     }
 
+    @Operation(summary = "Update service package")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Service package updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Service package not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @PutMapping("/{id}")
     @ApiMessage("Update service package")
     public ResponseEntity<ResServicePackageDTO> updateServicePackage(
@@ -116,6 +183,12 @@ public class ServicePackageController {
         return ResponseEntity.ok(updatedPackage);
     }
 
+    @Operation(summary = "Delete service package")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Service package deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Service package not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @DeleteMapping("/{id}")
     @ApiMessage("Delete service package")
     public ResponseEntity<Void> deleteServicePackage(@PathVariable Long id) {
@@ -124,6 +197,12 @@ public class ServicePackageController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Activate service package")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Service package activated successfully"),
+            @ApiResponse(responseCode = "404", description = "Service package not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @PutMapping("/{id}/activate")
     @ApiMessage("Activate service package")
     public ResponseEntity<ResServicePackageDTO> activateServicePackage(@PathVariable Long id) {
@@ -132,6 +211,12 @@ public class ServicePackageController {
         return ResponseEntity.ok(activatedPackage);
     }
 
+    @Operation(summary = "Deactivate service package")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Service package deactivated successfully"),
+            @ApiResponse(responseCode = "404", description = "Service package not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @PutMapping("/{id}/deactivate")
     @ApiMessage("Deactivate service package")
     public ResponseEntity<ResServicePackageDTO> deactivateServicePackage(@PathVariable Long id) {

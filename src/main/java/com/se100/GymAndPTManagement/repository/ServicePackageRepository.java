@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import com.se100.GymAndPTManagement.domain.table.ServicePackage;
@@ -16,7 +17,8 @@ import com.se100.GymAndPTManagement.util.enums.PackageTypeEnum;
  * Purpose: ServicePackage repository for database operations
  */
 @Repository
-public interface ServicePackageRepository extends JpaRepository<ServicePackage, Long> {
+public interface ServicePackageRepository
+        extends JpaRepository<ServicePackage, Long>, JpaSpecificationExecutor<ServicePackage> {
     Optional<ServicePackage> findByPackageName(String packageName);
 
     List<ServicePackage> findByIsActive(Boolean isActive);

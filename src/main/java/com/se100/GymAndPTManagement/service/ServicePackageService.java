@@ -3,12 +3,16 @@ package com.se100.GymAndPTManagement.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateServicePackageDTO;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateServicePackageDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResServicePackageDTO;
+import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
 import com.se100.GymAndPTManagement.domain.table.ServicePackage;
 import com.se100.GymAndPTManagement.repository.ServicePackageRepository;
 import com.se100.GymAndPTManagement.util.enums.PackageTypeEnum;
@@ -61,6 +65,30 @@ public class ServicePackageService {
         return servicePackageRepository.findAll().stream()
                 .map(ResServicePackageDTO::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Fetch service packages with pagination and filter
+     */
+    @Transactional(readOnly = true)
+    public ResultPaginationDTO handleFetchServicePackages(Specification<ServicePackage> specification,
+            Pageable pageable) {
+        Page<ServicePackage> pageServicePackages = servicePackageRepository.findAll(specification, pageable);
+        ResultPaginationDTO resultPaginationDTO = new ResultPaginationDTO();
+        ResultPaginationDTO.Meta meta = ResultPaginationDTO.Meta.builder()
+                .page(pageable.getPageNumber() + 1)
+                .pageSize(pageable.getPageSize())
+                .totalPages(pageServicePackages.getTotalPages())
+                .totalItems(pageServicePackages.getTotalElements())
+                .build();
+
+        resultPaginationDTO.setMeta(meta);
+        List<ResServicePackageDTO> result = pageServicePackages.getContent()
+                .stream()
+                .map(ResServicePackageDTO::fromEntity)
+                .collect(Collectors.toList());
+        resultPaginationDTO.setResult(result);
+        return resultPaginationDTO;
     }
 
     /**
