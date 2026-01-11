@@ -59,12 +59,12 @@
 
 ### ✅ CHECKPOINT 2 - Ngày 2
 #### 3. Service Package Entity
-- [~] Entity class (`domain/table/ServicePackage.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
-- [ ] Business logic: activate/deactivate packages
+- [X] Entity class (`domain/table/ServicePackage.java`)
+- [X] Repository
+- [X] Service layer
+- [X] DTOs
+- [X] Controller
+- [X] Business logic: activate/deactivate packages
 
 #### 4. Additional Service Entity
 - [ ] Entity class (`domain/table/AdditionalService.java`)
