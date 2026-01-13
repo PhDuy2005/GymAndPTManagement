@@ -3,7 +3,11 @@ package com.se100.GymAndPTManagement.service;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +16,7 @@ import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreatePTDTO;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdatePTDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResPTDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResUserDTO;
+import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
 import com.se100.GymAndPTManagement.domain.table.PersonalTrainer;
 import com.se100.GymAndPTManagement.domain.table.User;
 import com.se100.GymAndPTManagement.repository.PersonalTrainerRepository;
@@ -136,6 +141,29 @@ public class PersonalTrainerService {
         return pts.stream()
                 .map(this::convertToDTO)
                 .toList();
+    }
+
+    /**
+     * Fetch personal trainers with pagination and filter
+     */
+    @Transactional(readOnly = true)
+    public ResultPaginationDTO handleFetchPTs(Specification<PersonalTrainer> specification, Pageable pageable) {
+        Page<PersonalTrainer> pagePTs = ptRepository.findAll(specification, pageable);
+        ResultPaginationDTO resultPaginationDTO = new ResultPaginationDTO();
+        ResultPaginationDTO.Meta meta = ResultPaginationDTO.Meta.builder()
+                .page(pageable.getPageNumber() + 1)
+                .pageSize(pageable.getPageSize())
+                .totalPages(pagePTs.getTotalPages())
+                .totalItems(pagePTs.getTotalElements())
+                .build();
+
+        resultPaginationDTO.setMeta(meta);
+        List<ResPTDTO> result = pagePTs.getContent()
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+        resultPaginationDTO.setResult(result);
+        return resultPaginationDTO;
     }
 
     @Transactional
