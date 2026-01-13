@@ -68,11 +68,13 @@
 
 #### 4. Additional Service Entity
 - [X] Entity class (`domain/table/AdditionalService.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
-- [ ] Price management logic
+- [X] Repository (`repository/AdditionalServiceRepository.java`)
+- [X] Service layer (`service/AdditionalServiceService.java`)
+- [X] DTOs (ReqCreateAdditionalServiceDTO, ResAdditionalServiceDTO)
+- [X] Controller (`controller/AdditionalServiceController.java`)
+- [X] Price management logic
+- [X] Pagination & Specification support
+- [X] OpenAPI documentation (@Operation, @ApiResponses)
 
 ### ✅ CHECKPOINT 3 - Ngày 3
 #### 5. Slot Entity
