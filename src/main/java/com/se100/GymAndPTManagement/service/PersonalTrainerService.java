@@ -1,9 +1,15 @@
 package com.se100.GymAndPTManagement.service;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,10 +18,16 @@ import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreatePTDTO;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdatePTDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResPTDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResUserDTO;
+import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
+import com.se100.GymAndPTManagement.domain.table.AvailableSlot;
 import com.se100.GymAndPTManagement.domain.table.PersonalTrainer;
+import com.se100.GymAndPTManagement.domain.table.Slot;
 import com.se100.GymAndPTManagement.domain.table.User;
+import com.se100.GymAndPTManagement.repository.AvailableSlotRepository;
 import com.se100.GymAndPTManagement.repository.PersonalTrainerRepository;
+import com.se100.GymAndPTManagement.repository.SlotRepository;
 import com.se100.GymAndPTManagement.repository.UserRepository;
+import com.se100.GymAndPTManagement.util.enums.DayOfWeekEnum;
 import com.se100.GymAndPTManagement.util.enums.PTStatusEnum;
 import com.se100.GymAndPTManagement.util.enums.UserStatusEnum;
 
@@ -31,12 +43,17 @@ public class PersonalTrainerService {
     private final PersonalTrainerRepository ptRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AvailableSlotRepository availableSlotRepository;
+    private final SlotRepository slotRepository;
 
     public PersonalTrainerService(PersonalTrainerRepository ptRepository, UserRepository userRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder, AvailableSlotRepository availableSlotRepository,
+            SlotRepository slotRepository) {
         this.ptRepository = ptRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.availableSlotRepository = availableSlotRepository;
+        this.slotRepository = slotRepository;
     }
 
     private boolean isActivePT(PersonalTrainer pt) {
@@ -77,6 +94,35 @@ public class PersonalTrainerService {
         pt.setStatus(PTStatusEnum.BUSY);
         PersonalTrainer updatedPT = ptRepository.save(pt);
         return convertToDTO(updatedPT);
+    }
+
+    /**
+     * Get all available PTs by time slot and date
+     * 
+     * @param slotId ID of the time slot
+     * @param date   Date to check availability
+     * @return List of available PTs
+     */
+    public List<ResPTDTO> getAvailablePTsBySlotAndDate(Long slotId, LocalDate date) {
+        // Validate slot exists
+        Slot slot = slotRepository.findById(slotId)
+                .orElseThrow(() -> new NoSuchElementException("Slot not found with id: " + slotId));
+
+        // Get day of week from date
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
+        DayOfWeekEnum dayOfWeekEnum = DayOfWeekEnum.valueOf(dayOfWeek.name());
+
+        // Find all available slots for this slot ID and day of week
+        List<AvailableSlot> availableSlots = availableSlotRepository
+                .findBySlotIdAndDayOfWeekAndIsAvailable(slotId, dayOfWeekEnum, true);
+
+        // Extract PTs and filter by active status
+        return availableSlots.stream()
+                .map(AvailableSlot::getPersonalTrainer)
+                .filter(this::isActivePT)
+                .filter(this::isAvailablePT)
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     // =========================================
@@ -136,6 +182,29 @@ public class PersonalTrainerService {
         return pts.stream()
                 .map(this::convertToDTO)
                 .toList();
+    }
+
+    /**
+     * Fetch personal trainers with pagination and filter
+     */
+    @Transactional(readOnly = true)
+    public ResultPaginationDTO handleFetchPTs(Specification<PersonalTrainer> specification, Pageable pageable) {
+        Page<PersonalTrainer> pagePTs = ptRepository.findAll(specification, pageable);
+        ResultPaginationDTO resultPaginationDTO = new ResultPaginationDTO();
+        ResultPaginationDTO.Meta meta = ResultPaginationDTO.Meta.builder()
+                .page(pageable.getPageNumber() + 1)
+                .pageSize(pageable.getPageSize())
+                .totalPages(pagePTs.getTotalPages())
+                .totalItems(pagePTs.getTotalElements())
+                .build();
+
+        resultPaginationDTO.setMeta(meta);
+        List<ResPTDTO> result = pagePTs.getContent()
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+        resultPaginationDTO.setResult(result);
+        return resultPaginationDTO;
     }
 
     @Transactional
