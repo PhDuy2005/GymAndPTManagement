@@ -9,12 +9,19 @@
 
 ## 📊 Tổng Quan Công Việc
 
-### ✅ Đã Hoàn Thành (3/22)
+### ✅ Đã Hoàn Thành (10/22)
 - User
 - Role  
 - Permission
+- Member
+- PersonalTrainer
+- ServicePackage
+- AdditionalService
+- Slot
+- AvailableSlot
+- BodyMetrics
 
-### 🔨 Cần Implement (19/22)
+### 🔨 Cần Implement (12/22)
 
 ---
 
@@ -99,12 +106,14 @@
 ### ✅ CHECKPOINT 4 - Ngày 4
 #### 7. Body Metrics Entity
 - [X] Entity class (`domain/table/BodyMetrics.java`)
-- [X] Repository
-- [X] Service layer
-- [X] DTOs
-- [X] Controller
-- [X] BMI calculation logic
-- [ ] Progress tracking features
+- [X] Repository (`repository/BodyMetricsRepository.java`)
+- [X] Service layer (`service/BodyMetricsService.java`)
+- [X] DTOs (ReqCreateBodyMetricsDTO, ReqUpdateBodyMetricsDTO, ResBodyMetricsDTO)
+- [X] Controller (`controller/BodyMetricsController.java`)
+- [X] BMI calculation logic (auto-calculated in entity)
+- [X] Pagination & Specification support
+- [X] OpenAPI documentation (@Operation, @ApiResponses)
+- [X] Member metrics tracking (findByMemberIdOrderByMeasuredDateDesc)
 
 ### ✅ CHECKPOINT 5 - Ngày 5 (Testing & Integration)
 - [ ] Test tất cả APIs
