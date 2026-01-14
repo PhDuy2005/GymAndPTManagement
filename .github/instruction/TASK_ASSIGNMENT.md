@@ -89,12 +89,12 @@
 - [X] OpenAPI documentation (@Operation, @ApiResponses)
 
 #### 6. Available Slot Entity
-- [ ] Entity class (`domain/table/AvailableSlot.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
-- [ ] PT schedule management
+- [X] Entity class (`domain/table/AvailableSlot.java`)
+- [X] Repository
+- [X] Service layer
+- [X] DTOs
+- [X] Controller
+- [X] PT schedule management
 
 ### ✅ CHECKPOINT 4 - Ngày 4
 #### 7. Body Metrics Entity

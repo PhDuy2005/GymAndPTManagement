@@ -910,7 +910,7 @@ public class AvailableSlot {
     private Slot slot;
 
     @Column(name = "day_of_week", length = 20)
-    private String dayOfWeek;
+    private DayOfWeekEnum dayOfWeek;
 
     @Column(name = "is_available", nullable = false)
     private Boolean isAvailable;
