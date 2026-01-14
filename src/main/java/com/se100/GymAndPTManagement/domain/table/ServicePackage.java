@@ -58,6 +58,9 @@ public class ServicePackage {
     @Column(name = "duration_in_days")
     private Integer durationInDays;
 
+    @Column(name = "number_of_sessions")
+    private Integer numberOfSessions;
+
     // Audit fields
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -70,9 +73,6 @@ public class ServicePackage {
 
     @Column(name = "updated_by", length = 100)
     private String updatedBy;
-
-    @Column(name = "number_of_sessions")
-    private Integer numberOfSessions;
 
     @PrePersist
     protected void onCreate() {

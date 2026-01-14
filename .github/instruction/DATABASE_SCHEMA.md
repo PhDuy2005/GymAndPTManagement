@@ -1131,6 +1131,10 @@ public class BodyMetrics {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
+    @ManyToOne
+    @JoinColumn(name = "measured_by")
+    private User measuredBy;
+
     @Column(name = "measured_date", nullable = false)
     private LocalDate measuredDate;
 
@@ -1179,6 +1183,7 @@ public class BodyMetrics {
 **Columns**:
 - `metric_id`: BIGINT, Primary Key, Auto Increment
 - `member_id`: BIGINT, Not Null, Foreign Key -> members(member_id)
+- `measured_by`: BIGINT, Nullable, Foreign Key -> users(user_id)
 - `measured_date`: DATE, Not Null
 - `weight`: DECIMAL(5,2), Nullable
 - `height`: DECIMAL(5,2), Nullable
