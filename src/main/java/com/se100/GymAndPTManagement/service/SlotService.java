@@ -1,5 +1,8 @@
 package com.se100.GymAndPTManagement.service;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,10 +13,16 @@ import org.springframework.stereotype.Service;
 
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateSlotDTO;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateSlotDTO;
+import com.se100.GymAndPTManagement.domain.responseDTO.ResAvailableSlotByDateRangeDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResSlotDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
+import com.se100.GymAndPTManagement.domain.table.AvailableSlot;
+import com.se100.GymAndPTManagement.domain.table.PersonalTrainer;
 import com.se100.GymAndPTManagement.domain.table.Slot;
+import com.se100.GymAndPTManagement.repository.AvailableSlotRepository;
+import com.se100.GymAndPTManagement.repository.PersonalTrainerRepository;
 import com.se100.GymAndPTManagement.repository.SlotRepository;
+import com.se100.GymAndPTManagement.util.enums.DayOfWeekEnum;
 import com.se100.GymAndPTManagement.util.error.IdInvalidException;
 
 import lombok.RequiredArgsConstructor;
@@ -29,6 +38,8 @@ import lombok.RequiredArgsConstructor;
 public class SlotService {
 
     private final SlotRepository slotRepository;
+    private final AvailableSlotRepository availableSlotRepository;
+    private final PersonalTrainerRepository personalTrainerRepository;
 
     public ResSlotDTO createSlot(ReqCreateSlotDTO request) {
         // Validate time logic
@@ -117,6 +128,57 @@ public class SlotService {
                 .collect(Collectors.toList());
 
         result.setResult(slotDTOs);
+
+        return result;
+    }
+
+    /**
+     * Fetch all available slots for a PT within a date range
+     * 
+     * @param ptId      ID of the Personal Trainer
+     * @param startDate Start date of the range
+     * @param range     Number of days to search (default: 7)
+     * @return List of available slots grouped by date
+     */
+    public List<ResAvailableSlotByDateRangeDTO> getAvailableSlotsByPTAndDateRange(
+            Long ptId, LocalDate startDate, Integer range) {
+        // Validate PT exists
+        PersonalTrainer pt = personalTrainerRepository.findById(ptId)
+                .orElseThrow(() -> new IdInvalidException("Personal trainer not found with id: " + ptId));
+
+        // Get all available slots for this PT where isAvailable = true
+        List<AvailableSlot> availableSlots = availableSlotRepository
+                .findByPersonalTrainerIdAndIsAvailable(ptId, true);
+
+        // Build response for each date in the range
+        List<ResAvailableSlotByDateRangeDTO> result = new ArrayList<>();
+
+        for (int i = 0; i < range; i++) {
+            LocalDate currentDate = startDate.plusDays(i);
+            DayOfWeek dayOfWeek = currentDate.getDayOfWeek();
+            DayOfWeekEnum dayOfWeekEnum = DayOfWeekEnum.valueOf(dayOfWeek.name());
+
+            // Filter available slots for this day of week
+            availableSlots.stream()
+                    .filter(as -> as.getDayOfWeek() == dayOfWeekEnum)
+                    .forEach(as -> {
+                        ResAvailableSlotByDateRangeDTO dto = ResAvailableSlotByDateRangeDTO.builder()
+                                .dayOfWeek(dayOfWeekEnum)
+                                .date(currentDate)
+                                .pt(ResAvailableSlotByDateRangeDTO.PT.builder()
+                                        .ptId(pt.getId())
+                                        .name(pt.getUser().getFullname())
+                                        .build())
+                                .slot(ResAvailableSlotByDateRangeDTO.Slot.builder()
+                                        .slotId(as.getSlot().getId())
+                                        .name(as.getSlot().getSlotName())
+                                        .startTime(as.getSlot().getStartTime())
+                                        .endTime(as.getSlot().getEndTime())
+                                        .build())
+                                .build();
+                        result.add(dto);
+                    });
+        }
 
         return result;
     }

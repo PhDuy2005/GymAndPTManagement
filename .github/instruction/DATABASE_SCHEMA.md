@@ -624,6 +624,15 @@ public class ServicePackage {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
+    @Column(name = "description", columnDefinition = "MEDIUMTEXT")
+    private String description;
+
+    @Column(name = "duration_in_days")
+    private Integer durationInDays;
+
+    @Column(name = "number_of_sessions")
+    private Integer numberOfSessions;
+
     // Audit fields (bắt buộc)
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -644,6 +653,12 @@ public class ServicePackage {
         if (isActive == null) {
             isActive = true;
         }
+        if (price == null) {
+            price = BigDecimal.ZERO;
+        }
+        if (numberOfSessions == null) {
+            numberOfSessions = 0;
+        }
     }
 
     @PreUpdate
@@ -660,6 +675,9 @@ public class ServicePackage {
 - `price`: DECIMAL(15,2), Not Null
 - `type`: VARCHAR(50), Nullable
 - `is_active`: BOOLEAN, Not Null, Default: true
+- `description`: MEDIUMTEXT, Nullable
+- `duration_in_days`: INT, Nullable
+- `number_of_sessions`: INT, Nullable
 - `created_at`: TIMESTAMP, Not Null
 - `updated_at`: TIMESTAMP, Nullable
 - `created_by`: VARCHAR(100), Nullable
@@ -693,6 +711,12 @@ public class AdditionalService {
     @Column(name = "suggest_sell_price", precision = 15, scale = 2)
     private BigDecimal suggestSellPrice;
 
+    @Column(name = "description", length = 1000)
+    private String description;
+
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive;
+
     // Audit fields (bắt buộc)
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -710,6 +734,9 @@ public class AdditionalService {
     protected void onCreate() {
         createdAt = Instant.now();
         createdBy = SecurityUtil.getCurrentUserLogin().orElse("system");
+        if (isActive == null) {
+            isActive = true;
+        }
     }
 
     @PreUpdate
@@ -725,6 +752,8 @@ public class AdditionalService {
 - `name`: VARCHAR(255), Not Null
 - `cost_price`: DECIMAL(15,2), Nullable
 - `suggest_sell_price`: DECIMAL(15,2), Nullable
+- `description`: VARCHAR(1000), Nullable
+- `is_active`: BOOLEAN, Not Null, Default: true
 - `created_at`: TIMESTAMP, Not Null
 - `updated_at`: TIMESTAMP, Nullable
 - `created_by`: VARCHAR(100), Nullable
@@ -846,6 +875,9 @@ public class Slot {
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive;
+
     // Audit fields (bắt buộc)
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -875,8 +907,10 @@ public class Slot {
 
 **Columns**:
 - `slot_id`: BIGINT, Primary Key, Auto Increment
+- `slot_name`: VARCHAR(255), Not Null
 - `start_time`: TIME, Not Null
 - `end_time`: TIME, Not Null
+- `is_active`: BOOLEAN, Not Null, Default: true
 - `created_at`: TIMESTAMP, Not Null
 - `updated_at`: TIMESTAMP, Nullable
 - `created_by`: VARCHAR(100), Nullable

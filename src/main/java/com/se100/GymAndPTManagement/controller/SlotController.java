@@ -1,5 +1,6 @@
 package com.se100.GymAndPTManagement.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -7,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,10 +18,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateSlotDTO;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateSlotDTO;
+import com.se100.GymAndPTManagement.domain.responseDTO.ResAvailableSlotByDateRangeDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResSlotDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
 import com.se100.GymAndPTManagement.domain.table.Slot;
@@ -163,5 +167,25 @@ public class SlotController {
         ResSlotDTO activated = slotService.activateSlot(id);
         logger.info(">>SLOT CONTROLLER: Activated slot with ID: {}", id);
         return ResponseEntity.ok(activated);
+    }
+
+    @Operation(summary = "Get all available slots for a PT within a date range")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "404", description = "Personal trainer not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    @GetMapping("/available-by-pt")
+    @ApiMessage("Lấy danh sách slot rảnh của PT theo khoảng thời gian")
+    public ResponseEntity<List<ResAvailableSlotByDateRangeDTO>> getAvailableSlotsByPTAndDateRange(
+            @Parameter(description = "ID của PT", required = true, example = "1") @RequestParam("ptId") Long ptId,
+            @Parameter(description = "Ngày bắt đầu (yyyy-MM-dd)", required = true, example = "2026-01-20") @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @Parameter(description = "Số ngày tìm kiếm (mặc định = 7)", required = false, example = "7") @RequestParam(value = "range", defaultValue = "7") Integer range) {
+        logger.info(">>SLOT CONTROLLER: Fetching available slots for PT ID: {}, start date: {}, range: {}",
+                ptId, startDate, range);
+        List<ResAvailableSlotByDateRangeDTO> slots = slotService.getAvailableSlotsByPTAndDateRange(ptId, startDate,
+                range);
+        logger.info(">>SLOT CONTROLLER: Retrieved {} available slots", slots.size());
+        return ResponseEntity.ok(slots);
     }
 }
