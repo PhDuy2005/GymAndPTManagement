@@ -210,3 +210,163 @@
   - `.github/instruction/algo/search-filter.md`
   - `.github/logs/generation-log.md`
 - **Description**: Extract 4 thuật toán còn lại từ ALGORITHMS.md vào các file riêng trong folder algo/: Password Strength Validation (Data Validation category), Audit Trail (Utilities category), Pagination (Pagination category), và Search & Filter (Search & Filter category). Cập nhật ALGORITHMS.md index với links đến các file mới. Xóa phần content dư thừa (line 164-356) khỏi ALGORITHMS.md. Hoàn tất quá trình restructure - giờ ALGORITHMS.md chỉ là file index/navigation thuần túy.
+
+---
+
+## [2026-01-08 14:30:00] - Tao Entity Contract
+- **Model**: GitHub Copilot (Claude Haiku 4.5)
+- **User**: KStuv
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/domain/table/Contract.java`
+- **Description**: Tao entity Contract theo schema trong DATABASE_SCHEMA.md. Entity co 2 relationships: n:1 voi Member (bat buoc), n:1 voi PersonalTrainer (main_pt_id, nullable). Cac truong: startDate, endDate, status, notes (TEXT), signedAt. Day du audit fields (created_at, updated_at, created_by, updated_by) voi @PrePersist va @PreUpdate hooks su dung SecurityUtil.
+
+---
+
+## [2026-01-08 14:50:00] - Tao Contract Repository, Service, Controller va DTOs
+- **Model**: GitHub Copilot (Claude Haiku 4.5)
+- **User**: KStuv
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/repository/ContractRepository.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/requestDTO/ReqCreateContractDTO.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/responseDTO/ResContractDTO.java`
+  - `src/main/java/com/se100/GymAndPTManagement/service/ContractService.java`
+  - `src/main/java/com/se100/GymAndPTManagement/controller/ContractController.java`
+- **Description**: Tao day du Repository-Service-Controller cho Contract voi tinh nang transaction. ContractRepository co custom methods: findByMemberId(), findByMainPtId(), findByStatus(). ReqCreateContractDTO voi validation @NotNull, @NotBlank cho cac fields bat buoc. ResContractDTO chua day du thong tin contract + member name + package name/price + PT name. ContractService su dung @Transactional de dam bao ACID khi tao contract + invoice tu dong: validation kiem tra member/package/PT ton tai, startDate < endDate; tao Invoice voi totalAmount = package price, finalAmount = totalAmount, payment_status = PAID, status = COMPLETED. ContractController co 5 endpoints: POST /api/v1/contracts (tao), GET /api/v1/contracts/{id}, GET /api/v1/contracts/member/{memberId}, GET /api/v1/contracts/pt/{ptId}, GET /api/v1/contracts/status/{status}. Tat ca endpoints co @ApiMessage annotation.
+
+---
+
+## [2026-01-08 15:15:00] - Tạo Hệ Thống Quản Lý Trạng Thái Contract
+- **Model**: GitHub Copilot (Claude Haiku 4.5)
+- **User**: KStuv
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/util/enums/ContractStatusEnum.java`
+  - `src/main/java/com/se100/GymAndPTManagement/service/ContractStatusService.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/table/Contract.java` (modified)
+  - `src/main/java/com/se100/GymAndPTManagement/repository/ContractRepository.java` (modified)
+  - `src/main/java/com/se100/GymAndPTManagement/service/ContractService.java` (modified)
+- **Description**: Tạo ContractStatusEnum với 3 trạng thái (ACTIVE, EXPIRED, CANCELLED). Contract entity sử dụng @Enumerated(EnumType.STRING) cho status. ContractStatusService cung cấp: autoExpireContracts() tự động hết hạn các contract quá end_date, getRemainingDays() tính số ngày còn lại, changeContractStatus() đổi status với validation rules (ACTIVE->EXPIRED/CANCELLED, EXPIRED->CANCELLED, CANCELLED terminal).
+
+---
+
+## [2026-01-11 10:30:00] - Tạo Entity Booking
+- **Model**: GitHub Copilot (Claude Haiku 4.5)
+- **User**: KStuv
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/domain/table/Booking.java`
+- **Description**: Tạo entity Booking với 4 mối quan hệ ManyToOne: contract (bắt buộc), member (bắt buộc), realPt (nullable), slot (bắt buộc). Trường chính: booking_date (LocalDate, bắt buộc). Đầy đủ audit fields (createdAt, updatedAt, createdBy, updatedBy) với @PrePersist và @PreUpdate hooks sử dụng SecurityUtil. Sử dụng Lombok @Data, @Builder, @NoArgsConstructor, @AllArgsConstructor.
+
+---
+
+## [2026-01-11 11:30:00] - Implement Booking Management System with Dynamic Filtering
+- **Model**: GitHub Copilot (Claude Haiku 4.5)
+- **User**: KStuv
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/repository/BookingRepository.java`
+  - `src/main/java/com/se100/GymAndPTManagement/repository/SlotRepository.java`
+  - `src/main/java/com/se100/GymAndPTManagement/repository/AvailableSlotRepository.java`
+  - `src/main/java/com/se100/GymAndPTManagement/repository/ContractRepository.java` (modified)
+  - `src/main/java/com/se100/GymAndPTManagement/service/BookingService.java`
+  - `src/main/java/com/se100/GymAndPTManagement/controller/BookingController.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/requestDTO/ReqCreateBookingDTO.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/responseDTO/ResBookingDTO.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/responseDTO/ResAvailableSlotDTO.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/responseDTO/ResAvailablePTDTO.java`
+- **Description**: Tạo hệ thống quản lý booking hoàn chỉnh hỗ trợ 2 luồng lọc động (Dynamic Filtering):
+
+**Luồng 1 (PT -> Slots)**: GET /api/v1/bookings/available-slots?ptId=X&date=YYYY-MM-DD
+  - Truy vấn available_slots với điều kiện: pt_id = X, day_of_week = {ngày trong tuần từ date}, is_available = true
+  - Loại trừ các slot đã bị đặt trong bookings với real_pt_id = X và booking_date = date
+  - Trả về danh sách ResAvailableSlotDTO
+
+**Luồng 2 (Slot -> PTs)**: GET /api/v1/bookings/available-pts?slotId=X&date=YYYY-MM-DD
+  - Truy vấn available_slots với điều kiện: slot_id = X, day_of_week = {ngày trong tuần từ date}, is_available = true
+  - Loại trừ các PT đã bị đặt trong bookings với slot_id = X và booking_date = date
+  - Trả về danh sách ResAvailablePTDTO
+
+**Tạo Booking**: POST /api/v1/bookings với payload ReqCreateBookingDTO (memberId, ptId, slotId, bookingDate)
+  - Kiểm tra member tồn tại
+  - Kiểm tra member có hợp đồng ACTIVE che phủ booking_date: startDate <= bookingDate <= endDate
+  - Kiểm tra PT tồn tại
+  - Kiểm tra slot tồn tại
+  - Kiểm tra trùng lịch (duplicate): không tồn tại record với realPt.id = ptId, slot.id = slotId, bookingDate = date
+  - Lưu booking với contract_id từ hợp đồng ACTIVE tìm được
+  - Trả về ResBookingDTO
+
+**Repository Queries**:
+- BookingRepository.getAvailableSlotsForPT(): Custom @Query JPQL trả về List<Slot>
+- BookingRepository.getAvailablePTsForSlot(): Custom @Query JPQL trả về List<PersonalTrainer>
+- BookingRepository.findByRealPtIdAndSlotIdAndBookingDate(): Tìm booking trùng lặp
+- ContractRepository.findByMemberIdAndStatusAndDateRange(): Custom @Query tìm active contract với date range
+
+**Service Methods**:
+- getAvailableSlotsForPT(ptId, date): Xác định DayOfWeek, gọi repository query, map to DTOs
+- getAvailablePTsForSlot(slotId, date): Xác định DayOfWeek, gọi repository query, map to DTOs
+- createBooking(@Valid ReqCreateBookingDTO): @Transactional, validation + duplicate check + save
+- getBookingsByMember(memberId), getBookingsByPT(ptId), getBookingById(id), deleteBooking(id)
+
+**Controller Endpoints** (tất cả return ResponseEntity<RestResponse<T>>):
+- GET /api/v1/bookings/available-slots - Flow 1
+- GET /api/v1/bookings/available-pts - Flow 2
+- POST /api/v1/bookings - Tạo booking mới
+- GET /api/v1/bookings/{bookingId} - Chi tiết booking
+- GET /api/v1/bookings/member/{memberId} - Danh sách booking của member
+- GET /api/v1/bookings/pt/{ptId} - Danh sách booking của PT
+- DELETE /api/v1/bookings/{bookingId} - Xóa booking
+
+Tất cả endpoints có @ApiMessage annotation cho Swagger documentation.
+
+---
+
+## [2026-01-12 09:30:00] - Implement Check-in Log Management System
+- **Model**: GitHub Copilot (Claude Haiku 4.5)
+- **User**: KStuv
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/repository/CheckinLogRepository.java`
+  - `src/main/java/com/se100/GymAndPTManagement/service/CheckinLogService.java`
+  - `src/main/java/com/se100/GymAndPTManagement/controller/CheckinLogController.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/requestDTO/ReqCheckinDTO.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/responseDTO/ResCheckinLogDTO.java`
+- **Description**: Tạo hệ thống quản lý check-in log hoàn chỉnh với 3 thao tác chính:
+
+**CheckinLogRepository** - Custom JPQL Queries:
+- `findActiveCheckInByBookingId()`: Tìm active checkin (status = CHECKED_IN) mới nhất
+- `findLatestByBookingId()`: Tìm checkin mới nhất bất kể status
+- `hasActiveCheckin()`: Kiểm tra booking có active checkin không (status != CANCELLED)
+- `findByMemberId()`, `findByBookingId()`, `findByBookingIdAndStatus()`: Queries hỗ trợ
+
+**CheckinLogService** - 3 Business Operations:
+
+1. **checkIn(ReqCheckinDTO)** (@Transactional):
+   - Validate booking tồn tại
+   - Kiểm tra booking chưa có active checkin
+   - Tạo CheckinLog: booking, member (từ booking), checkinTime = LocalTime.now(), status = "CHECKED_IN", checkoutTime = null
+   - Map sang ResCheckinLogDTO
+
+2. **checkOut(bookingId)** (@Transactional):
+   - Tìm active checkin log (CHECKED_IN status)
+   - Update: checkoutTime = LocalTime.now(), status = "CHECKED_OUT"
+   - Lưu lại
+   - Map sang ResCheckinLogDTO
+
+3. **cancelCheckin(bookingId)** (@Transactional):
+   - Tìm latest checkin log (bất kể status)
+   - Update: status = "CANCELLED"
+   - Lưu lại
+   - Map sang ResCheckinLogDTO
+
+Plus 3 query methods: getCheckinsByMember(), getCheckinsByBooking(), getCheckinById()
+
+**CheckinLogController** - 6 REST Endpoints:
+- `POST /api/v1/checkins` - Check-in khi member đến
+- `PUT /api/v1/checkins/checkout/{bookingId}` - Check-out khi member kết thúc
+- `PUT /api/v1/checkins/cancel/{bookingId}` - Hủy check-in khi nhầm
+- `GET /api/v1/checkins/{checkinId}` - Chi tiết checkin log
+- `GET /api/v1/checkins/member/{memberId}` - Danh sách logs của member
+- `GET /api/v1/checkins/booking/{bookingId}` - Danh sách logs của booking
+
+Tất cả endpoints return `ResponseEntity<RestResponse<T>>`, có @ApiMessage annotation, error handling IllegalArgumentException.
+
+**DTOs**:
+- `ReqCheckinDTO`: bookingId (@NotNull)
+- `ResCheckinLogDTO`: checkinId, bookingId, memberId, memberName, checkinTime, checkoutTime, status, createdBy
+
