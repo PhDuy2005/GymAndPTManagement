@@ -837,6 +837,9 @@ public class Slot {
     @Column(name = "slot_id")
     private Long id;
 
+    @Column(name = "slot_name", nullable = false)
+    private String slotName;
+
     @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
 
@@ -907,7 +910,7 @@ public class AvailableSlot {
     private Slot slot;
 
     @Column(name = "day_of_week", length = 20)
-    private String dayOfWeek;
+    private DayOfWeekEnum dayOfWeek;
 
     @Column(name = "is_available", nullable = false)
     private Boolean isAvailable;

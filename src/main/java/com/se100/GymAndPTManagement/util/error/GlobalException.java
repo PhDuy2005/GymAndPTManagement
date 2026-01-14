@@ -7,6 +7,7 @@ import java.util.NoSuchElementException;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -136,6 +137,39 @@ public class GlobalException {
         restResponse.setError("401 Unauthorized Exception occurs: You must login first");
         restResponse.setMessage(ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restResponse);
+    }
+
+    @ExceptionHandler(value = IdInvalidException.class)
+    public ResponseEntity<RestResponse<Object>> handleIdInvalidException(IdInvalidException ex) {
+        RestResponse<Object> restResponse = new RestResponse<>();
+        restResponse.setStatusCode(HttpStatus.NOT_FOUND.value());
+        restResponse.setError("Resource not found");
+        restResponse.setMessage(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(restResponse);
+    }
+
+    @ExceptionHandler(value = HttpMessageNotReadableException.class)
+    public ResponseEntity<RestResponse<Object>> handleHttpMessageNotReadableException(
+            HttpMessageNotReadableException ex) {
+        RestResponse<Object> restResponse = new RestResponse<>();
+        restResponse.setStatusCode(HttpStatus.BAD_REQUEST.value());
+        restResponse.setError("Invalid request body");
+
+        // Extract more meaningful error message
+        String message = ex.getMessage();
+        if (message != null && message.contains("Cannot deserialize value of type")) {
+            // Extract the specific error for enum or type mismatch
+            if (message.contains("DayOfWeekEnum")) {
+                restResponse.setMessage(
+                        "Invalid day of week. Allowed values: MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY");
+            } else {
+                restResponse.setMessage("Invalid data format in request body");
+            }
+        } else {
+            restResponse.setMessage("Malformed JSON request");
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(restResponse);
     }
 
 }
