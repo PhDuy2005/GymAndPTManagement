@@ -370,3 +370,46 @@ Tất cả endpoints return `ResponseEntity<RestResponse<T>>`, có @ApiMessage a
 - `ReqCheckinDTO`: bookingId (@NotNull)
 - `ResCheckinLogDTO`: checkinId, bookingId, memberId, memberName, checkinTime, checkoutTime, status, createdBy
 
+---
+
+## [2026-01-14 21:10:00] - Create Invoice and InvoiceDetail Entity Models
+- **Model**: GitHub Copilot (Claude Haiku 4.5)
+- **User**: KStuv
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/domain/table/Invoice.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/table/InvoiceDetail.java`
+- **Description**: Tạo 2 entity cho hệ thống quản lý hóa đơn và thanh toán:
+
+**Invoice Entity**:
+- Lưu thông tin hóa đơn chính cho member
+- Fields chính:
+  - `member_id`: BIGINT (n:1 relationship với Member)
+  - `total_amount`: DECIMAL(15,2) - Tổng tiền trước chiết khấu
+  - `discount_amount`: DECIMAL(15,2) - Tiền chiết khấu
+  - `final_amount`: DECIMAL(15,2) - Tiền cuối cùng phải trả
+  - `payment_method`: VARCHAR(50) - Phương thức thanh toán (CASH, BANK_TRANSFER, CARD, etc.)
+  - `payment_status`: VARCHAR(50) - Trạng thái thanh toán (PENDING, PAID, PARTIAL, OVERDUE)
+  - `status`: VARCHAR(50) - Trạng thái hóa đơn (DRAFT, ISSUED, CANCELLED)
+- Đầy đủ audit fields: createdAt, updatedAt, createdBy, updatedBy
+- Lifecycle management: @PrePersist, @PreUpdate với SecurityUtil
+
+**InvoiceDetail Entity**:
+- Chi tiết dòng hóa đơn (line items)
+- Fields chính:
+  - `invoice_id`: BIGINT (n:1 relationship với Invoice)
+  - `service_id`: BIGINT - Foreign key tới ServicePackage (nullable)
+  - `additional_service_id`: BIGINT - Foreign key tới AdditionalService (nullable)
+  - `quantity`: INT - Số lượng dịch vụ
+  - `unit_price`: DECIMAL(15,2) - Giá đơn vị
+  - `total_amount`: DECIMAL(15,2) - Thành tiền = quantity * unit_price
+- Hỗ trợ tính toán chi tiết các khoản phí từ service packages hoặc additional services
+- Đầy đủ audit fields: createdAt, updatedAt, createdBy, updatedBy
+- Lifecycle management: @PrePersist, @PreUpdate với SecurityUtil
+
+**Design Patterns**:
+- ManyToOne relationship: Invoice → Member, InvoiceDetail → Invoice
+- Optional ManyToOne: InvoiceDetail có thể liên kết với ServicePackage HOẶC AdditionalService
+- BigDecimal sử dụng cho tất cả monetary values (precision=15, scale=2)
+- Lombok @Builder, @Data, @NoArgsConstructor, @AllArgsConstructor
+- Jakarta Persistence annotations (@Entity, @Table, @Column, @JoinColumn)
+
