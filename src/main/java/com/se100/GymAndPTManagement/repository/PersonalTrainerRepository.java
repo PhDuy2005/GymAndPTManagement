@@ -3,7 +3,6 @@ package com.se100.GymAndPTManagement.repository;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import com.se100.GymAndPTManagement.domain.table.PersonalTrainer;
@@ -15,7 +14,6 @@ import com.se100.GymAndPTManagement.domain.table.PersonalTrainer;
  * Purpose: PersonalTrainer repository for database operations
  */
 @Repository
-public interface PersonalTrainerRepository
-        extends JpaRepository<PersonalTrainer, Long>, JpaSpecificationExecutor<PersonalTrainer> {
+public interface PersonalTrainerRepository extends JpaRepository<PersonalTrainer, Long> {
     Optional<PersonalTrainer> findByUserId(Long userId);
 }

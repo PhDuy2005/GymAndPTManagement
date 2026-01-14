@@ -42,14 +42,8 @@ dependencies {
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14") // OpenAPI/Swagger
-	implementation("com.turkraft.springfilter:jpa:3.2.5") // Spring Filter JPA
-	implementation("com.turkraft.springfilter:openapi:3.2.5") // Spring Filter OpenAPI
 }
 
 tasks.withType<Test> {
 	useJUnitPlatform()
-}
-
-tasks.withType<JavaCompile> {
-    options.compilerArgs.add("-parameters")
 }
