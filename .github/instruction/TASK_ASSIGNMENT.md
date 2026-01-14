@@ -78,12 +78,15 @@
 
 ### ✅ CHECKPOINT 3 - Ngày 3
 #### 5. Slot Entity
-- [ ] Entity class (`domain/table/Slot.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
-- [ ] Time validation logic
+- [X] Entity class (`domain/table/Slot.java`)
+- [X] Repository (`repository/SlotRepository.java`)
+- [X] Service layer (`service/SlotService.java`)
+- [X] DTOs (ReqCreateSlotDTO, ReqUpdateSlotDTO, ResSlotDTO)
+- [X] Controller (`controller/SlotController.java`)
+- [X] Time validation logic (startTime < endTime)
+- [X] Pagination & Specification support
+- [X] Active/Inactive management
+- [X] OpenAPI documentation (@Operation, @ApiResponses)
 
 #### 6. Available Slot Entity
 - [ ] Entity class (`domain/table/AvailableSlot.java`)

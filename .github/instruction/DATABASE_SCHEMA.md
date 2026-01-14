@@ -837,6 +837,9 @@ public class Slot {
     @Column(name = "slot_id")
     private Long id;
 
+    @Column(name = "slot_name", nullable = false)
+    private String slotName;
+
     @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
 
