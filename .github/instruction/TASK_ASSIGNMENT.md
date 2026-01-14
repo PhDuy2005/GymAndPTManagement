@@ -98,12 +98,12 @@
 
 ### ✅ CHECKPOINT 4 - Ngày 4
 #### 7. Body Metrics Entity
-- [ ] Entity class (`domain/table/BodyMetrics.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
-- [ ] BMI calculation logic
+- [X] Entity class (`domain/table/BodyMetrics.java`)
+- [X] Repository
+- [X] Service layer
+- [X] DTOs
+- [X] Controller
+- [X] BMI calculation logic
 - [ ] Progress tracking features
 
 ### ✅ CHECKPOINT 5 - Ngày 5 (Testing & Integration)

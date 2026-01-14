@@ -1,10 +1,12 @@
 package com.se100.GymAndPTManagement.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -180,5 +182,20 @@ public class PersonalTrainerController {
     public ResponseEntity<ResPTDTO> setBusyPT(@PathVariable("id") Long ptId) {
         ResPTDTO pt = ptService.setBusyPT(ptId);
         return ResponseEntity.ok(pt);
+    }
+
+    @Operation(summary = "Get all available PTs by time slot and date")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "404", description = "Slot not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    @GetMapping("/available-by-slot")
+    @ApiMessage("Lấy danh sách PT rảnh theo slot và ngày") // approved
+    public ResponseEntity<List<ResPTDTO>> getAvailablePTsBySlotAndDate(
+            @Parameter(description = "ID của slot", required = true, example = "1") @RequestParam("slotId") Long slotId,
+            @Parameter(description = "Ngày cần kiểm tra (yyyy-MM-dd)", required = true, example = "2026-01-20") @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        List<ResPTDTO> pts = ptService.getAvailablePTsBySlotAndDate(slotId, date);
+        return ResponseEntity.ok(pts);
     }
 }

@@ -27,4 +27,7 @@ public interface AvailableSlotRepository
 
     Optional<AvailableSlot> findBySlotIdAndPersonalTrainerIdAndDayOfWeek(Long slotId, Long ptId,
             DayOfWeekEnum dayOfWeek);
+
+    List<AvailableSlot> findBySlotIdAndDayOfWeekAndIsAvailable(Long slotId, DayOfWeekEnum dayOfWeek,
+            Boolean isAvailable);
 }
