@@ -28,15 +28,6 @@ public interface FoodRepository extends JpaRepository<Food, Long>, JpaSpecificat
     // JPA supports BETWEEN automatically
     Page<Food> findByCaloriesBetween(BigDecimal minCalories, BigDecimal maxCalories, Pageable pageable);
 
-    // JPA method naming - order by protein descending
-    Page<Food> findAllByOrderByProteinGDesc(Pageable pageable);
-
-    // JPA method naming - order by carbs descending
-    Page<Food> findAllByOrderByCarbsGDesc(Pageable pageable);
-
-    // JPA method naming - order by fat descending
-    Page<Food> findAllByOrderByFatGDesc(Pageable pageable);
-
     // Search by name or note
     Page<Food> findByNameContainingIgnoreCase(String nameKeyword, Pageable pageable);
 

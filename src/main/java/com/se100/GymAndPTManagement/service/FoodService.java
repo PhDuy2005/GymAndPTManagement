@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -243,8 +244,8 @@ public class FoodService {
      * @return List of top protein foods
      */
     public List<ResFoodDTO> getTopProteinFoods(int limit) {
-        Pageable pageable = PageRequest.of(0, limit);
-        Page<Food> foodPage = foodRepository.findAllByOrderByProteinGDesc(pageable);
+        Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "proteinG"));
+        Page<Food> foodPage = foodRepository.findAll(pageable);
 
         return foodPage.getContent().stream()
                 .map(this::convertToDTO)
@@ -258,8 +259,8 @@ public class FoodService {
      * @return List of top carb foods
      */
     public List<ResFoodDTO> getTopCarbFoods(int limit) {
-        Pageable pageable = PageRequest.of(0, limit);
-        Page<Food> foodPage = foodRepository.findAllByOrderByCarbsGDesc(pageable);
+        Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "carbsG"));
+        Page<Food> foodPage = foodRepository.findAll(pageable);
 
         return foodPage.getContent().stream()
                 .map(this::convertToDTO)
@@ -273,8 +274,8 @@ public class FoodService {
      * @return List of top fat foods
      */
     public List<ResFoodDTO> getTopFatFoods(int limit) {
-        Pageable pageable = PageRequest.of(0, limit);
-        Page<Food> foodPage = foodRepository.findAllByOrderByFatGDesc(pageable);
+        Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "fatG"));
+        Page<Food> foodPage = foodRepository.findAll(pageable);
 
         return foodPage.getContent().stream()
                 .map(this::convertToDTO)

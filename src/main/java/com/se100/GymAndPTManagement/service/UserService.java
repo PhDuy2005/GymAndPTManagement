@@ -20,7 +20,7 @@ public class UserService {
     // private final RoleService roleService;
 
     public User handleFindByUsername(String username) {
-        return userRepository.findByUsername(username);
+        return userRepository.findByEmail(username).get();
     }
 
     public void updateUserRefreshToken(String token, String email) {
