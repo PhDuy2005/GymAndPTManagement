@@ -83,6 +83,9 @@ public class User {
     @JoinColumn(name = "role_id")
     private Role role;
 
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String refreshToken;
+
     // Audit fields (bắt buộc)
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

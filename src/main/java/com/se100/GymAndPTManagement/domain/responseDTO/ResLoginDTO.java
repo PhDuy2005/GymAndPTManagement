@@ -14,6 +14,7 @@ public class ResLoginDTO {
     @JsonProperty("access_token")
     private String accessToken;
     private UserLogin user;
+    private Role role;
 
     @Data
     @NoArgsConstructor
@@ -22,7 +23,7 @@ public class ResLoginDTO {
         private Long id;
         private String email;
         private String name;
-        private Role role;
+        // private Role role;
     }
 
     @Data
@@ -30,6 +31,7 @@ public class ResLoginDTO {
     @AllArgsConstructor
     public static class UserGetAccount {
         private UserLogin user;
+        private Role role;
     }
 
     @Data
@@ -38,5 +40,13 @@ public class ResLoginDTO {
     public static class UserInsideToken {
         private Long id;
         private String email, name;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Role {
+        private Long roleId;
+        private String roleName;
     }
 }
