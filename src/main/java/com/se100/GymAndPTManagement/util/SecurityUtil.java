@@ -57,13 +57,17 @@ public class SecurityUtil {
         Instant now = Instant.now();
         Instant expirationTime = now.plusSeconds(accessTokenExpiration);
 
+        // Get Role information
+        ResLoginDTO.Role role = dto.getRole();
+
         // Lấy permissions từ role của user
-        List<String> listAuthorities = new ArrayList<String>();
-        if (dto.getUser().getRole() != null && dto.getUser().getRole().getPermissions() != null) {
-            listAuthorities = dto.getUser().getRole().getPermissions().stream()
-                    .map(permission -> permission.getName())
-                    .toList();
-        }
+        // List<String> listAuthorities = new ArrayList<String>();
+        // if (dto.getUser().getRole() != null &&
+        // dto.getUser().getRole().getPermissions() != null) {
+        // listAuthorities = dto.getUser().getRole().getPermissions().stream()
+        // .map(permission -> permission.getName())
+        // .toList();
+        // }
 
        //@formatter:off
        JwtClaimsSet claims = JwtClaimsSet.builder()
@@ -71,7 +75,8 @@ public class SecurityUtil {
        .expiresAt(expirationTime)
        .subject(email)
        .claim("user", userInsideToken) //Lưu thông tin cần viết về user trong token
-       .claim("permission", listAuthorities)
+       //.claim("permission", listAuthorities)
+       .claim("role", role)
        .build();
 
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
