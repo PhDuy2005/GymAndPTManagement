@@ -18,8 +18,10 @@ import com.se100.GymAndPTManagement.domain.responseDTO.ResMemberDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResUserDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
 import com.se100.GymAndPTManagement.domain.table.Member;
+import com.se100.GymAndPTManagement.domain.table.Role;
 import com.se100.GymAndPTManagement.domain.table.User;
 import com.se100.GymAndPTManagement.repository.MemberRepository;
+import com.se100.GymAndPTManagement.repository.RoleRepository;
 import com.se100.GymAndPTManagement.repository.UserRepository;
 import com.se100.GymAndPTManagement.util.enums.UserStatusEnum;
 
@@ -34,6 +36,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     Logger logger = Logger.getLogger(MemberService.class.getName());
 
@@ -42,9 +45,10 @@ public class MemberService {
     // =========================================
 
     public MemberService(MemberRepository memberRepository, UserRepository userRepository,
-            PasswordEncoder passwordEncoder) {
+            RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.memberRepository = memberRepository;
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -82,6 +86,12 @@ public class MemberService {
         logger.info(">>>MEMBER SERVICE - CREATE MEMBER: Validation passed for email and CCCD.");
         System.out.println(">>>MEMBER SERVICE - CREATE MEMBER: Validation passed.");
 
+        // Get MEMBER role
+        Role memberRole = roleRepository.findByName("MEMBER");
+        if (memberRole == null) {
+            throw new IllegalArgumentException("MEMBER role not found in the system");
+        }
+
         // Tạo User entity
         String finalPassword = (request.getPassword() == null || request.getPassword().trim().isEmpty())
                 ? "12345678"
@@ -96,9 +106,10 @@ public class MemberService {
                 .dob(request.getDob())
                 .gender(request.getGender())
                 .status(request.getStatus() != null ? request.getStatus() : UserStatusEnum.ACTIVE)
+                .role(memberRole)
                 .build();
 
-        System.out.println(">>>MEMBER SERVICE - CREATE MEMBER: User entity created.");
+        System.out.println(">>>MEMBER SERVICE - CREATE MEMBER: User entity created with MEMBER role.");
         // Save User
         User savedUser = userRepository.save(user);
         System.out.println(">>>MEMBER SERVICE - CREATE MEMBER: User saved with ID " + savedUser.getId());

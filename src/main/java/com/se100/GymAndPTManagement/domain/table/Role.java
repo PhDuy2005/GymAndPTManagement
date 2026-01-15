@@ -1,6 +1,7 @@
 package com.se100.GymAndPTManagement.domain.table;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 import com.se100.GymAndPTManagement.util.SecurityUtil;
@@ -30,11 +31,11 @@ public class Role {
     private boolean active;
 
     @OneToMany(mappedBy = "role", fetch = FetchType.LAZY)
-    private Set<User> users;
+    private List<User> users;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "role_permission", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
-    private Set<Permission> permissions;
+    private List<Permission> permissions;
 
     // Audit fields
     @Column(name = "created_at", nullable = false, updatable = false)
