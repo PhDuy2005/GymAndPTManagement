@@ -9,7 +9,7 @@
 
 ## 📊 Tổng Quan Công Việc
 
-### ✅ Đã Hoàn Thành (10/22)
+### ✅ Đã Hoàn Thành (13/22)
 - User
 - Role  
 - Permission
@@ -20,8 +20,11 @@
 - Slot
 - AvailableSlot
 - BodyMetrics
+- Food ✅
+- DailyDiet ✅
+- DietDetail ✅
 
-### 🔨 Cần Implement (12/22)
+### 🔨 Cần Implement (9/22)
 
 ---
 
@@ -187,31 +190,38 @@
 
 ### ✅ CHECKPOINT 1 - Ngày 1
 #### 1. Food Entity (Ưu tiên cao)
-- [ ] Entity class (`domain/table/Food.java`)
-- [ ] Repository (`repository/FoodRepository.java`)
-- [ ] Service class
-- [ ] Request/Response DTOs
-- [ ] REST Controller
-- [ ] Nutrition database management
+- [X] Entity class (`domain/table/Food.java`)
+- [X] Repository (`repository/FoodRepository.java`)
+- [X] Service class (`service/FoodService.java`)
+- [X] Request/Response DTOs (ReqCreateFoodDTO, ReqUpdateFoodDTO, ResFoodDTO)
+- [X] REST Controller (`controller/FoodController.java`)
+- [X] Nutrition database management
+- [X] Auto-calculate calories and food type
+- [X] **Documentation** (`.github/instruction/controller-example/FoodController.md`)
 
 ### ✅ CHECKPOINT 2 - Ngày 2 (Diet Management)
 #### 2. Daily Diet Entity
-- [ ] Entity class (`domain/table/DailyDiet.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
-- [ ] Diet plan creation
-- [ ] Water intake tracking
+- [X] Entity class (`domain/table/DailyDiet.java`)
+- [X] Repository (`repository/DailyDietRepository.java`)
+- [X] Service layer (`service/DailyDietService.java`)
+- [X] DTOs (ReqCreateDailyDietDTO, ReqUpdateDailyDietDTO, ResDailyDietDTO)
+- [X] Controller (`controller/DailyDietController.java`)
+- [X] Diet plan creation
+- [X] Water intake tracking
+- [X] Date range filtering
+- [X] Cascade loading diet details
+- [X] **Documentation** (`.github/instruction/controller-example/DailyDietController.md`)
 
 #### 3. Diet Detail Entity (Composite Key)
-- [ ] Entity class (`domain/table/DietDetail.java`)
-- [ ] Composite key class (`domain/table/DietDetailId.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
-- [ ] Handle composite primary key correctly
+- [X] Entity class (`domain/table/DietDetail.java`)
+- [X] Composite key class (`domain/table/DietDetailId.java`)
+- [X] Repository (`repository/DietDetailRepository.java`)
+- [X] Service layer (`service/DietDetailService.java`)
+- [X] DTOs (ReqCreateDietDetailDTO, ReqUpdateDietDetailDTO, ResDietDetailDTO)
+- [X] Controller (`controller/DietDetailController.java`)
+- [X] Handle composite primary key correctly
+- [X] Nutrition calculation (total = per100g/100 × amount)
+- [X] **Documentation** (`.github/instruction/controller-example/DietDetailController.md`)
 
 ### ✅ CHECKPOINT 3 - Ngày 3 (Workout)
 #### 4. Workout Device Entity
