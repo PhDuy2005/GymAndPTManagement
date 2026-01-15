@@ -21,10 +21,12 @@ import com.se100.GymAndPTManagement.domain.responseDTO.ResUserDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
 import com.se100.GymAndPTManagement.domain.table.AvailableSlot;
 import com.se100.GymAndPTManagement.domain.table.PersonalTrainer;
+import com.se100.GymAndPTManagement.domain.table.Role;
 import com.se100.GymAndPTManagement.domain.table.Slot;
 import com.se100.GymAndPTManagement.domain.table.User;
 import com.se100.GymAndPTManagement.repository.AvailableSlotRepository;
 import com.se100.GymAndPTManagement.repository.PersonalTrainerRepository;
+import com.se100.GymAndPTManagement.repository.RoleRepository;
 import com.se100.GymAndPTManagement.repository.SlotRepository;
 import com.se100.GymAndPTManagement.repository.UserRepository;
 import com.se100.GymAndPTManagement.util.enums.DayOfWeekEnum;
@@ -42,15 +44,17 @@ public class PersonalTrainerService {
 
     private final PersonalTrainerRepository ptRepository;
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final AvailableSlotRepository availableSlotRepository;
     private final SlotRepository slotRepository;
 
     public PersonalTrainerService(PersonalTrainerRepository ptRepository, UserRepository userRepository,
-            PasswordEncoder passwordEncoder, AvailableSlotRepository availableSlotRepository,
+            RoleRepository roleRepository, PasswordEncoder passwordEncoder, AvailableSlotRepository availableSlotRepository,
             SlotRepository slotRepository) {
         this.ptRepository = ptRepository;
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.availableSlotRepository = availableSlotRepository;
         this.slotRepository = slotRepository;
@@ -136,6 +140,12 @@ public class PersonalTrainerService {
             throw new IllegalArgumentException("Email đã tồn tại trong hệ thống");
         }
 
+        // Get PT role
+        Role ptRole = roleRepository.findByName("PT");
+        if (ptRole == null) {
+            throw new IllegalArgumentException("PT role not found in the system");
+        }
+
         // Tạo User entity
         String finalPassword = (request.getPassword() == null || request.getPassword().trim().isEmpty())
                 ? "12345678"
@@ -150,11 +160,12 @@ public class PersonalTrainerService {
                 .dob(request.getDob())
                 .gender(request.getGender())
                 .status(request.getStatus() != null ? request.getStatus() : UserStatusEnum.ACTIVE)
+                .role(ptRole)
                 .build();
 
         // Save User
         User savedUser = userRepository.save(user);
-        System.out.println(">>>PT SERVICE - CREATE PT: User created with ID " + savedUser.getId());
+        System.out.println(">>>PT SERVICE - CREATE PT: User created with ID " + savedUser.getId() + " and PT role.");
 
         // Tạo PersonalTrainer entity
         PersonalTrainer pt = PersonalTrainer.builder()
