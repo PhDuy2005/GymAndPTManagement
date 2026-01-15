@@ -9,7 +9,7 @@
 
 ## 📊 Tổng Quan Công Việc
 
-### ✅ Đã Hoàn Thành (13/22)
+### ✅ Đã Hoàn Thành (14/22)
 - User
 - Role  
 - Permission
@@ -23,8 +23,9 @@
 - Food ✅
 - DailyDiet ✅
 - DietDetail ✅
+- WorkoutDevice ✅
 
-### 🔨 Cần Implement (9/22)
+### 🔨 Cần Implement (8/22)
 
 ---
 
@@ -225,12 +226,14 @@
 
 ### ✅ CHECKPOINT 3 - Ngày 3 (Workout)
 #### 4. Workout Device Entity
-- [ ] Entity class (`domain/table/WorkoutDevice.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
-- [ ] Maintenance schedule tracking
+- [X] Entity class (`domain/table/WorkoutDevice.java`)
+- [X] Repository (`repository/WorkoutDeviceRepository.java`)
+- [X] Service layer (`service/WorkoutDeviceService.java`)
+- [X] DTOs (ReqCreateWorkoutDeviceDTO, ReqUpdateWorkoutDeviceDTO, ResWorkoutDeviceDTO)
+- [X] Controller (`controller/WorkoutDeviceController.java`)
+- [X] Maintenance schedule tracking
+- [X] Device type filtering
+- [X] Import date tracking
 
 #### 5. Workout Entity
 - [ ] Entity class (`domain/table/Workout.java`)
