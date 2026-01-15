@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateBookingDTO;
+import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateBookingPTDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.RestResponse;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResBookingDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResAvailableSlotDTO;
@@ -29,6 +30,25 @@ import java.util.List;
 public class BookingController {
 
     private final BookingService bookingService;
+
+    /**
+     * Get all bookings (for booking list page)
+     * 
+     * @return List of all bookings
+     */
+    @GetMapping
+    @ApiMessage("Lấy danh sách tất cả lịch đặt")
+    public ResponseEntity<RestResponse<List<ResBookingDTO>>> getAllBookings() {
+
+        List<ResBookingDTO> bookings = bookingService.getAllBookings();
+
+        return ResponseEntity.ok(
+                RestResponse.<List<ResBookingDTO>>builder()
+                        .statusCode(200)
+                        .message("Lấy danh sách lịch đặt thành công")
+                        .data(bookings)
+                        .build());
+    }
 
     /**
      * Get available slots for a PT on a specific date (Flow 1: Choose PT -> Get Slots)
@@ -175,6 +195,40 @@ public class BookingController {
                     .body(RestResponse.<ResBookingDTO>builder()
                             .statusCode(400)
                             .error("NOT_FOUND")
+                            .message(e.getMessage())
+                            .build());
+        }
+    }
+
+    /**
+     * Update personal trainer for a booking
+     * PUT /api/v1/bookings/{bookingId}/pt
+     * 
+     * @param bookingId Booking ID
+     * @param newPtId New PT ID (from request body)
+     * @return Updated booking details
+     */
+    @PutMapping("/{bookingId}/pt")
+    @ApiMessage("Cập nhật PT cho lịch đặt")
+    public ResponseEntity<RestResponse<ResBookingDTO>> updateBookingPT(
+            @PathVariable Long bookingId,
+            @RequestParam Long ptId) {
+
+        try {
+            ResBookingDTO updatedBooking = bookingService.updateBookingPT(bookingId, ptId);
+
+            return ResponseEntity.ok(
+                    RestResponse.<ResBookingDTO>builder()
+                            .statusCode(200)
+                            .message("Cập nhật PT thành công")
+                            .data(updatedBooking)
+                            .build());
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(RestResponse.<ResBookingDTO>builder()
+                            .statusCode(400)
+                            .error("VALIDATION_ERROR")
                             .message(e.getMessage())
                             .build());
         }

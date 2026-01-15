@@ -18,16 +18,31 @@ import java.util.Optional;
 
 @Repository
 public interface ContractRepository extends JpaRepository<Contract, Long> {
+    
+    /**
+     * Find all contracts for a member
+     */
     List<Contract> findByMemberId(Long memberId);
     
+    /**
+     * Find all contracts for a personal trainer
+     */
     List<Contract> findByMainPtId(Long ptId);
     
+    /**
+     * Find all contracts by status
+     */
     List<Contract> findByStatus(ContractStatusEnum status);
     
+    /**
+     * Find all contracts by status, ordered by end date descending
+     * Useful for displaying most recent contracts first
+     */
     List<Contract> findByStatusOrderByEndDateDesc(ContractStatusEnum status);
 
     /**
      * Find active contract for a member that covers a specific date
+     * Used for booking validation - checks if member has valid contract on booking date
      */
     @Query("""
         SELECT c FROM Contract c
@@ -42,4 +57,16 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
         @Param("status") ContractStatusEnum status,
         @Param("bookingDate") LocalDate bookingDate
     );
+    
+    /**
+     * Find contracts for a member with specific status
+     * Useful for filtering (e.g., show only ACTIVE contracts for a member)
+     */
+    List<Contract> findByMemberIdAndStatus(Long memberId, ContractStatusEnum status);
+    
+    /**
+     * Find contracts for a PT with specific status
+     * Useful for PT dashboard filtering
+     */
+    List<Contract> findByMainPtIdAndStatus(Long ptId, ContractStatusEnum status);
 }

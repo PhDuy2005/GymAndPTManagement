@@ -11,12 +11,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.se100.GymAndPTManagement.domain.table.Booking;
 import com.se100.GymAndPTManagement.domain.table.CheckinLog;
+import com.se100.GymAndPTManagement.domain.table.Contract;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCheckinDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResCheckinLogDTO;
+import com.se100.GymAndPTManagement.domain.responseDTO.ResAttendanceTrackingDTO;
 import com.se100.GymAndPTManagement.repository.BookingRepository;
 import com.se100.GymAndPTManagement.repository.CheckinLogRepository;
+import com.se100.GymAndPTManagement.repository.ContractRepository;
 
 import lombok.RequiredArgsConstructor;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +32,7 @@ public class CheckinLogService {
 
     private final CheckinLogRepository checkinLogRepository;
     private final BookingRepository bookingRepository;
+    private final ContractRepository contractRepository;
 
     /**
      * Create check-in log when member arrives
@@ -97,16 +103,18 @@ public class CheckinLogService {
     }
 
     /**
-     * Cancel a checkin log when admin makes a mistake
+     * Cancel a checkin log when admin makes a mistake or booking is cancelled
      * 
      * Business Logic:
      * 1. Find latest checkin log by booking ID
-     * 2. Update status to CANCELLED
-     * 3. Save changes
+     * 2. Get the associated booking and contract
+     * 3. Update checkin status to CANCELLED
+     * 4. Restore remaining_sessions of the contract (increase by 1)
+     * 5. Save changes to both checkin log and contract
      * 
      * @param bookingId Booking ID to identify the checkin log
      * @return Updated checkin log response
-     * @throws IllegalArgumentException if log not found
+     * @throws IllegalArgumentException if log or booking not found
      */
     @Transactional
     public ResCheckinLogDTO cancelCheckin(Long bookingId) {
@@ -115,13 +123,26 @@ public class CheckinLogService {
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Không tìm thấy check-in log cho booking này"));
 
-        // Step 2: Update status to CANCELLED
+        // Step 2: Get the associated booking and contract
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
+        
+        Contract contract = booking.getContract();
+
+        // Step 3: Update status to CANCELLED
         checkinLog.setStatus("CANCELLED");
 
-        // Step 3: Save changes
+        // Step 4: Restore remaining_sessions by incrementing by 1
+        // Only restore if contract has remaining_sessions tracking and not already at max
+        if (contract.getRemainingSessions() != null && contract.getRemainingSessions() < contract.getTotalSessions()) {
+            contract.setRemainingSessions(contract.getRemainingSessions() + 1);
+            contractRepository.save(contract);
+        }
+
+        // Step 5: Save changes to checkin log
         CheckinLog updatedLog = checkinLogRepository.save(checkinLog);
 
-        // Step 4: Return response DTO
+        // Step 6: Return response DTO
         return mapToResponseDTO(updatedLog);
     }
 
@@ -155,6 +176,72 @@ public class CheckinLogService {
         CheckinLog checkinLog = checkinLogRepository.findById(checkinId)
                 .orElseThrow(() -> new IllegalArgumentException("Checkin log không tồn tại"));
         return mapToResponseDTO(checkinLog);
+    }
+
+    /**
+     * Get attendance tracking statistics for a member
+     * 
+     * Business Logic:
+     * 1. Get member's active contracts (latest one)
+     * 2. Calculate totalSessions and remainingSessions from contract
+     * 3. Calculate bookedSessions = totalSessions - remainingSessions
+     * 4. Count attendedSessions = CheckinLog records with status = 'CHECKED_OUT'
+     * 5. Calculate attendanceRate = (attendedSessions / bookedSessions) * 100
+     * 
+     * @param memberId Member ID
+     * @return Attendance tracking statistics
+     * @throws IllegalArgumentException if member or contract not found
+     */
+    @Transactional(readOnly = true)
+    public ResAttendanceTrackingDTO getAttendanceTracking(Long memberId) {
+        // Step 1: Get member's active contracts
+        // For simplicity, we get the most recent contract with sessions info
+        List<Contract> memberContracts = contractRepository.findByMemberId(memberId);
+        
+        if (memberContracts.isEmpty()) {
+            throw new IllegalArgumentException("Thành viên không có hợp đồng nào");
+        }
+        
+        // Get the most recent contract (assuming contracts are ordered by creation)
+        Contract latestContract = memberContracts.get(memberContracts.size() - 1);
+        
+        // Step 2: Extract session counts from contract
+        Integer totalSessions = latestContract.getTotalSessions() != null ? latestContract.getTotalSessions() : 0;
+        Integer remainingSessions = latestContract.getRemainingSessions() != null ? latestContract.getRemainingSessions() : 0;
+        
+        // Step 3: Calculate booked sessions
+        Integer bookedSessions = totalSessions - remainingSessions;
+        if (bookedSessions < 0) {
+            bookedSessions = 0;
+        }
+        
+        // Step 4: Count attended sessions
+        Long attendedSessionsCount = checkinLogRepository.countAttendedSessionsByMemberId(memberId);
+        Integer attendedSessions = attendedSessionsCount != null ? attendedSessionsCount.intValue() : 0;
+        
+        // Step 5: Calculate attendance rate
+        BigDecimal attendanceRate = null;
+        String attendancePercentage = "0%";
+        
+        if (bookedSessions > 0) {
+            attendanceRate = new BigDecimal(attendedSessions)
+                    .divide(new BigDecimal(bookedSessions), 4, RoundingMode.HALF_UP)
+                    .multiply(new BigDecimal(100));
+            
+            attendancePercentage = attendanceRate.setScale(2, RoundingMode.HALF_UP).toString() + "%";
+        }
+        
+        // Step 6: Build and return response DTO
+        return ResAttendanceTrackingDTO.builder()
+                .memberId(memberId)
+                .memberName(latestContract.getMember().getUser().getFullname())
+                .totalSessions(totalSessions)
+                .remainingSessions(remainingSessions)
+                .bookedSessions(bookedSessions)
+                .attendedSessions(attendedSessions)
+                .attendanceRate(attendanceRate)
+                .attendancePercentage(attendancePercentage)
+                .build();
     }
 
     /**

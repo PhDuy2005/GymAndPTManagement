@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCheckinDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.RestResponse;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResCheckinLogDTO;
+import com.se100.GymAndPTManagement.domain.responseDTO.ResAttendanceTrackingDTO;
 import com.se100.GymAndPTManagement.service.CheckinLogService;
 import com.se100.GymAndPTManagement.util.annotation.ApiMessage;
 
@@ -186,6 +187,44 @@ public class CheckinLogController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                     .body(RestResponse.<ResCheckinLogDTO>builder()
+                            .statusCode(400)
+                            .error("NOT_FOUND")
+                            .message(e.getMessage())
+                            .build());
+        }
+    }
+
+    /**
+     * Get attendance tracking statistics for a member
+     * 
+     * Calculates:
+     * - Total sessions from contract
+     * - Remaining sessions
+     * - Booked sessions (total - remaining)
+     * - Attended sessions (count of CHECKED_OUT status)
+     * - Attendance rate percentage
+     * 
+     * @param memberId Member ID
+     * @return Attendance tracking statistics
+     */
+    @GetMapping("/attendance/{memberId}")
+    @ApiMessage("Lấy thống kê tỷ lệ điểm danh của thành viên")
+    public ResponseEntity<RestResponse<ResAttendanceTrackingDTO>> getAttendanceTracking(
+            @PathVariable Long memberId) {
+
+        try {
+            ResAttendanceTrackingDTO attendanceStats = checkinLogService.getAttendanceTracking(memberId);
+
+            return ResponseEntity.ok(
+                    RestResponse.<ResAttendanceTrackingDTO>builder()
+                            .statusCode(200)
+                            .message("Lấy thống kê điểm danh thành công")
+                            .data(attendanceStats)
+                            .build());
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(RestResponse.<ResAttendanceTrackingDTO>builder()
                             .statusCode(400)
                             .error("NOT_FOUND")
                             .message(e.getMessage())

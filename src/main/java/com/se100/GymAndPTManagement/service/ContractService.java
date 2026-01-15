@@ -10,11 +10,14 @@ import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateContractDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResContractDTO;
 import com.se100.GymAndPTManagement.domain.table.Contract;
 import com.se100.GymAndPTManagement.domain.table.Invoice;
+import com.se100.GymAndPTManagement.domain.table.InvoiceDetail;
 import com.se100.GymAndPTManagement.domain.table.Member;
 import com.se100.GymAndPTManagement.domain.table.PersonalTrainer;
 import com.se100.GymAndPTManagement.domain.table.ServicePackage;
 import com.se100.GymAndPTManagement.repository.ContractRepository;
 import com.se100.GymAndPTManagement.repository.InvoiceRepository;
+import com.se100.GymAndPTManagement.repository.InvoiceDetailRepository;
+import com.se100.GymAndPTManagement.util.enums.PaymentStatusEnum;
 import com.se100.GymAndPTManagement.repository.MemberRepository;
 import com.se100.GymAndPTManagement.repository.PersonalTrainerRepository;
 import com.se100.GymAndPTManagement.repository.ServicePackageRepository;
@@ -32,17 +35,20 @@ public class ContractService {
     
     private final ContractRepository contractRepository;
     private final InvoiceRepository invoiceRepository;
+    private final InvoiceDetailRepository invoiceDetailRepository;
     private final MemberRepository memberRepository;
     private final ServicePackageRepository servicePackageRepository;
     private final PersonalTrainerRepository personalTrainerRepository;
     
     public ContractService(ContractRepository contractRepository,
                           InvoiceRepository invoiceRepository,
+                          InvoiceDetailRepository invoiceDetailRepository,
                           MemberRepository memberRepository,
                           ServicePackageRepository servicePackageRepository,
                           PersonalTrainerRepository personalTrainerRepository) {
         this.contractRepository = contractRepository;
         this.invoiceRepository = invoiceRepository;
+        this.invoiceDetailRepository = invoiceDetailRepository;
         this.memberRepository = memberRepository;
         this.servicePackageRepository = servicePackageRepository;
         this.personalTrainerRepository = personalTrainerRepository;
@@ -52,31 +58,53 @@ public class ContractService {
     public ResContractDTO createContractWithInvoice(ReqCreateContractDTO request) {
         // Validation: Check member exists
         Member member = memberRepository.findById(request.getMemberId())
-            .orElseThrow(() -> new RuntimeException("Member not found with ID: " + request.getMemberId()));
+            .orElseThrow(() -> new IllegalArgumentException("Member not found with ID: " + request.getMemberId()));
         
         // Validation: Check service package exists
         ServicePackage servicePackage = servicePackageRepository.findById(request.getPackageId())
-            .orElseThrow(() -> new RuntimeException("Service package not found with ID: " + request.getPackageId()));
+            .orElseThrow(() -> new IllegalArgumentException("Service package not found with ID: " + request.getPackageId()));
         
         // Validation: Check PT exists if provided
         PersonalTrainer personalTrainer = null;
         if (request.getPtId() != null) {
             personalTrainer = personalTrainerRepository.findById(request.getPtId())
-                .orElseThrow(() -> new RuntimeException("Personal trainer not found with ID: " + request.getPtId()));
+                .orElseThrow(() -> new IllegalArgumentException("Personal trainer not found with ID: " + request.getPtId()));
         }
         
-        // Validation: startDate < endDate
-        if (request.getStartDate().isAfter(request.getEndDate())) {
-            throw new RuntimeException("Start date must be before end date");
+        // Validation: startDate must be present or future
+        if (request.getStartDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Start date must be present or future date");
         }
         
-        // Create Contract Entity
+        // Calculate endDate based on duration_in_days from service package
+        if (servicePackage.getDurationInDays() == null || servicePackage.getDurationInDays() <= 0) {
+            throw new IllegalArgumentException("Service package must have valid duration_in_days (> 0)");
+        }
+        
+        LocalDate calculatedEndDate = request.getStartDate().plusDays(servicePackage.getDurationInDays());
+        
+        // Validation: If endDate is provided, verify it matches calculated endDate
+        if (request.getEndDate() != null) {
+            if (!request.getEndDate().equals(calculatedEndDate)) {
+                throw new IllegalArgumentException(
+                    String.format("End date must be calculated as start_date + %d days. " +
+                                "Expected: %s, Provided: %s",
+                                servicePackage.getDurationInDays(),
+                                calculatedEndDate,
+                                request.getEndDate())
+                );
+            }
+        }
+        
+        // Create Contract Entity with automatically calculated endDate
         Contract contract = Contract.builder()
             .member(member)
             .servicePackage(servicePackage)
             .mainPt(personalTrainer)
             .startDate(request.getStartDate())
-            .endDate(request.getEndDate())
+            .endDate(calculatedEndDate)
+            .totalSessions(servicePackage.getNumberOfSessions())
+            .remainingSessions(servicePackage.getNumberOfSessions())
             .status(ContractStatusEnum.ACTIVE)
             .notes(request.getNotes())
             .signedAt(Instant.now())
@@ -85,22 +113,52 @@ public class ContractService {
         // Save contract
         Contract savedContract = contractRepository.save(contract);
         
-        // Create Invoice Entity automatically
+        // Calculate invoice amounts
+        // Step 1: Get discount from request (default 0 if null)
+        BigDecimal discountAmount = request.getDiscountAmount() != null 
+            ? request.getDiscountAmount() 
+            : BigDecimal.ZERO;
+        
+        // Step 2: Get total amount from service package price
+        BigDecimal totalAmount = servicePackage.getPrice();
+        
+        // Step 3: Validate discount is not greater than total
+        if (discountAmount.compareTo(totalAmount) > 0) {
+            throw new IllegalArgumentException("Discount amount cannot exceed total amount");
+        }
+        
+        // Step 4: Calculate final amount
+        BigDecimal finalAmount = totalAmount.subtract(discountAmount);
+        
+        // Step 5: Create Invoice Entity automatically
         Invoice invoice = Invoice.builder()
             .member(member)
-            .totalAmount(servicePackage.getPrice())
-            .discountAmount(BigDecimal.ZERO)
-            .finalAmount(servicePackage.getPrice())
+            .totalAmount(totalAmount)
+            .discountAmount(discountAmount)
+            .finalAmount(finalAmount)
             .paymentMethod(request.getPaymentMethod())
-            .paymentStatus("PAID")
-            .status("COMPLETED")
+            .paymentStatus(PaymentStatusEnum.UNPAID)  // Default UNPAID
+            .status("ISSUED")  // Invoice issued
             .build();
         
-        // Save invoice
-        invoiceRepository.save(invoice);
+        // Step 6: Save invoice
+        Invoice savedInvoice = invoiceRepository.save(invoice);
+        
+        // Step 7: Create InvoiceDetail for service package
+        InvoiceDetail invoiceDetail = InvoiceDetail.builder()
+            .invoice(savedInvoice)
+            .servicePackage(servicePackage)
+            .additionalService(null)  // No additional service for now
+            .quantity(1)  // Quantity is always 1 for service package
+            .unitPrice(servicePackage.getPrice())  // Unit price = service package price
+            .totalAmount(servicePackage.getPrice())  // Total = quantity * unitPrice = 1 * price
+            .build();
+        
+        // Step 8: Save invoice detail
+        invoiceDetailRepository.save(invoiceDetail);
         
         // Build and return response DTO
-        return mapToResDTO(savedContract, member, servicePackage, personalTrainer);
+        return mapToResDTO(savedContract);
     }
     
     public List<Contract> getContractsByMember(Long memberId) {
@@ -128,7 +186,7 @@ public class ContractService {
     // =========================================
     
     /**
-     * Auto-expire contracts that have passed their end date
+     * Auto-expire contracts that have passed their end date OR remaining sessions = 0
      * Scheduled to run daily to check for expired contracts
      */
     @Transactional
@@ -139,8 +197,22 @@ public class ContractService {
         List<Contract> activeContracts = contractRepository.findByStatus(ContractStatusEnum.ACTIVE);
         
         for (Contract contract : activeContracts) {
+            boolean shouldExpire = false;
+            String reason = "";
+            
             // Check if contract has expired (end_date < today)
             if (contract.getEndDate().isBefore(today)) {
+                shouldExpire = true;
+                reason = "end_date expired";
+            }
+            
+            // Check if remaining sessions = 0
+            if (contract.getRemainingSessions() != null && contract.getRemainingSessions() <= 0) {
+                shouldExpire = true;
+                reason = reason.isEmpty() ? "remaining_sessions exhausted" : reason + " AND remaining_sessions exhausted";
+            }
+            
+            if (shouldExpire) {
                 contract.setStatus(ContractStatusEnum.EXPIRED);
                 contractRepository.save(contract);
             }
@@ -148,10 +220,28 @@ public class ContractService {
     }
     
     /**
-     * Check if a specific contract is expired
+     * Check if a specific contract is expired by end_date OR remaining_sessions = 0
      */
     public boolean isContractExpired(Contract contract) {
-        return contract.getEndDate().isBefore(LocalDate.now());
+        // Expired if end_date passed
+        if (contract.getEndDate().isBefore(LocalDate.now())) {
+            return true;
+        }
+        
+        // Expired if remaining sessions exhausted (= 0 or negative)
+        if (contract.getRemainingSessions() != null && contract.getRemainingSessions() <= 0) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Check if remaining sessions are about to be exhausted
+     * Returns true if remaining sessions <= 0
+     */
+    public boolean hasExhaustedSessions(Contract contract) {
+        return contract.getRemainingSessions() != null && contract.getRemainingSessions() <= 0;
     }
     
     /**
@@ -206,9 +296,15 @@ public class ContractService {
         
     // Mapper
     // =========================================
-    private ResContractDTO mapToResDTO(Contract contract, Member member,
-                                       ServicePackage servicePackage,
-                                       PersonalTrainer personalTrainer) {
+    /**
+     * Map Contract entity to ResContractDTO
+     * Extracts all related data from Contract object and its relationships
+     */
+    private ResContractDTO mapToResDTO(Contract contract) {
+        Member member = contract.getMember();
+        ServicePackage servicePackage = contract.getServicePackage();
+        PersonalTrainer personalTrainer = contract.getMainPt();
+        
         return ResContractDTO.builder()
                 .id(contract.getId())
                 .memberId(member.getId())
@@ -220,6 +316,8 @@ public class ContractService {
                 .ptName(personalTrainer != null ? personalTrainer.getUser().getFullname() : null)
                 .startDate(contract.getStartDate())
                 .endDate(contract.getEndDate())
+                .totalSessions(contract.getTotalSessions())
+                .remainingSessions(contract.getRemainingSessions())
                 .status(contract.getStatus().name())
                 .notes(contract.getNotes())
                 .signedAt(contract.getSignedAt())

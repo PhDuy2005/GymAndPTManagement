@@ -11,6 +11,7 @@ import java.time.Instant;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import com.se100.GymAndPTManagement.util.SecurityUtil;
+import com.se100.GymAndPTManagement.util.enums.PaymentStatusEnum;
 import lombok.*;
 
 @Entity
@@ -42,8 +43,9 @@ public class Invoice {
     @Column(name = "payment_method", length = 50)
     private String paymentMethod;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "payment_status", length = 50)
-    private String paymentStatus;
+    private PaymentStatusEnum paymentStatus;
 
     @Column(name = "status", length = 50)
     private String status;

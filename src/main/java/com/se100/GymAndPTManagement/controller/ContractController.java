@@ -37,9 +37,14 @@ public class ContractController {
             ResContractDTO contract = contractService.createContractWithInvoice(request);
             return ResponseEntity.status(HttpStatus.CREATED)
                 .body(FormatRestResponse.success(contract, "Contract created successfully"));
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
+            // Business validation errors
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(FormatRestResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            // Unexpected errors
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(FormatRestResponse.error("Failed to create contract: " + e.getMessage()));
         }
     }
     
@@ -117,6 +122,8 @@ public class ContractController {
                 .ptName(contract.getMainPt() != null ? contract.getMainPt().getUser().getFullname() : null)
                 .startDate(contract.getStartDate())
                 .endDate(contract.getEndDate())
+                .totalSessions(contract.getTotalSessions())
+                .remainingSessions(contract.getRemainingSessions())
                 .status(contract.getStatus())
                 .notes(contract.getNotes())
                 .signedAt(contract.getSignedAt())

@@ -28,13 +28,22 @@ public class ReqCreateContractDTO {
     private Long ptId; // Optional
     
     @NotNull(message = "Start date cannot be null")
+    @FutureOrPresent(message = "Start date must be present or future")
     private LocalDate startDate;
     
-    @NotNull(message = "End date cannot be null")
-    private LocalDate endDate;
+    /**
+     * End date is OPTIONAL - will be automatically calculated as:
+     * endDate = startDate + duration_in_days (from service package)
+     * 
+     * If provided by client, must match the calculated value exactly.
+     * Otherwise, service will throw IllegalArgumentException.
+     */
+    private LocalDate endDate; // Optional - auto-calculated from duration_in_days
     
     @NotBlank(message = "Payment method cannot be blank")
     private String paymentMethod;
+    
+    private BigDecimal discountAmount; // Discount amount, default 0 if null
     
     private String notes;
 }

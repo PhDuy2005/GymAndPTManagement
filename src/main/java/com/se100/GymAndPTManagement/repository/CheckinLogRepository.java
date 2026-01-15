@@ -21,16 +21,19 @@ public interface CheckinLogRepository extends JpaRepository<CheckinLog, Long> {
 
     /**
      * Find all checkin logs by member ID
+     * Used in CheckinLogService.getCheckinsByMember() and controller
      */
     List<CheckinLog> findByMemberId(Long memberId);
 
     /**
      * Find all checkin logs by booking ID
+     * Used in CheckinLogService.getCheckinsByBooking() and controller
      */
     List<CheckinLog> findByBookingId(Long bookingId);
 
     /**
      * Find active checkin log (CHECKED_IN status) by booking ID
+     * Used for checkout validation - checks if booking has active checkin
      */
     @Query("""
         SELECT cl FROM CheckinLog cl
@@ -43,6 +46,7 @@ public interface CheckinLogRepository extends JpaRepository<CheckinLog, Long> {
 
     /**
      * Find latest checkin log by booking ID (regardless of status)
+     * Used for cancel checkin operation
      */
     @Query("""
         SELECT cl FROM CheckinLog cl
@@ -53,17 +57,13 @@ public interface CheckinLogRepository extends JpaRepository<CheckinLog, Long> {
     Optional<CheckinLog> findLatestByBookingId(@Param("bookingId") Long bookingId);
 
     /**
-     * Check if booking already has active checkin (not cancelled)
+     * Count attended sessions (CHECKED_OUT status) for a member
+     * Used in CheckinLogService.getAttendanceTracking() for attendance statistics
      */
     @Query("""
-        SELECT COUNT(cl) > 0 FROM CheckinLog cl
-        WHERE cl.booking.id = :bookingId
-        AND cl.status != 'CANCELLED'
+        SELECT COUNT(cl) FROM CheckinLog cl
+        WHERE cl.member.id = :memberId
+        AND cl.status = 'CHECKED_OUT'
     """)
-    boolean hasActiveCheckin(@Param("bookingId") Long bookingId);
-
-    /**
-     * Find checkin logs by booking ID and status
-     */
-    List<CheckinLog> findByBookingIdAndStatus(Long bookingId, String status);
+    Long countAttendedSessionsByMemberId(@Param("memberId") Long memberId);
 }

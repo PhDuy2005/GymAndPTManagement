@@ -1225,9 +1225,6 @@ public class Invoice {
     @Column(name = "payment_status", length = 50)
     private String paymentStatus;
 
-    @Column(name = "status", length = 50)
-    private String status;
-
     // Audit fields (bắt buộc)
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

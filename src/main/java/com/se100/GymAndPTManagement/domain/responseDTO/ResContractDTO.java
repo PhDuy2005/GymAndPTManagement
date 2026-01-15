@@ -40,6 +40,10 @@ public class ResContractDTO {
     
     private LocalDate endDate;
     
+    private Integer totalSessions;
+    
+    private Integer remainingSessions;
+    
     private String status;
     
     private String notes;

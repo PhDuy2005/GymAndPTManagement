@@ -33,6 +33,7 @@ public class BookingService {
     private final PersonalTrainerRepository personalTrainerRepository;
     private final SlotRepository slotRepository;
     private final AvailableSlotRepository availableSlotRepository;
+    private final ContractService contractService;
 
     /**
      * Get available slots for a PT on a specific date (Flow 1)
@@ -90,8 +91,12 @@ public class BookingService {
      * 
      * Business Logic:
      * 1. Validate member has active contract that covers the booking date
-     * 2. Check for duplicate booking (same PT, slot, date)
-     * 3. Save the booking
+     * 2. Check if contract is expired (by end_date or remaining_sessions = 0)
+     * 3. Validate PT exists
+     * 4. Validate slot exists
+     * 5. Check for duplicate booking (same PT, slot, date)
+     * 6. Save the booking
+     * 7. Decrease remaining_sessions by 1 from contract
      * 
      * @param dto Create booking request DTO
      * @return Created booking response DTO
@@ -110,6 +115,23 @@ public class BookingService {
                 dto.getBookingDate())
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Thành viên không có hợp đồng hoạt động hợp lệ cho ngày đặt lịch này"));
+
+        // Step 2.1: Check if contract has expired (by end_date or remaining_sessions = 0)
+        if (activeContract.getEndDate().isBefore(dto.getBookingDate())) {
+            // Contract has expired by end_date
+            // If status is still ACTIVE, update it to EXPIRED
+            if (activeContract.getStatus() != ContractStatusEnum.EXPIRED) {
+                contractService.changeContractStatus(activeContract.getId(), ContractStatusEnum.EXPIRED);
+            }
+            throw new IllegalArgumentException("Hợp đồng đã hết hạn (end_date đã qua)");
+        }
+
+        // Step 2.2: Check if contract has exhausted all remaining sessions (defensive check)
+        // Note: This should rarely happen since Step 7.1 auto-expires contract when remaining_sessions = 0
+        // But keeping as safety net for data consistency
+        if (activeContract.getRemainingSessions() != null && activeContract.getRemainingSessions() <= 0) {
+            throw new IllegalArgumentException("Hợp đồng đã hết buổi tập (remaining_sessions = 0)");
+        }
 
         // Step 3: Validate PT exists
         PersonalTrainer pt = personalTrainerRepository.findById(dto.getPtId())
@@ -141,8 +163,31 @@ public class BookingService {
 
         Booking savedBooking = bookingRepository.save(booking);
 
-        // Step 7: Return response DTO
+        // Step 7: Decrease remaining sessions from active contract
+        if (activeContract.getRemainingSessions() != null && activeContract.getRemainingSessions() > 0) {
+            activeContract.setRemainingSessions(activeContract.getRemainingSessions() - 1);
+            
+            // Step 7.1: If remaining sessions becomes 0, auto update status to EXPIRED
+            if (activeContract.getRemainingSessions() <= 0 && activeContract.getStatus() != ContractStatusEnum.EXPIRED) {
+                activeContract.setStatus(ContractStatusEnum.EXPIRED);
+            }
+            
+            contractRepository.save(activeContract);
+        }
+
+        // Step 8: Return response DTO
         return mapToResponseDTO(savedBooking);
+    }
+
+    /**
+     * Get all bookings for a member
+     */
+    @Transactional(readOnly = true)
+    public List<ResBookingDTO> getAllBookings() {
+        return bookingRepository.findAll()
+                .stream()
+                .map(this::mapToResponseDTO)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -178,12 +223,63 @@ public class BookingService {
     }
 
     /**
-     * Delete a booking
+     * Update personal trainer for a booking
+     * 
+     * Business Logic:
+     * 1. Find booking by ID
+     * 2. Validate PT exists
+     * 3. Update booking realPt with new PT
+     * 4. Save the booking
+     * 
+     * @param bookingId Booking ID
+     * @param newPtId New Personal Trainer ID
+     * @return Updated booking DTO
+     * @throws IllegalArgumentException if booking or PT not found
+     */
+    @Transactional
+    public ResBookingDTO updateBookingPT(Long bookingId, Long newPtId) {
+        // Step 1: Find booking
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
+        
+        // Step 2: Validate PT exists
+        PersonalTrainer newPt = personalTrainerRepository.findById(newPtId)
+                .orElseThrow(() -> new IllegalArgumentException("Personal trainer không tồn tại"));
+        
+        // Step 3: Update PT
+        booking.setRealPt(newPt);
+        
+        // Step 4: Save booking
+        Booking updatedBooking = bookingRepository.save(booking);
+        
+        return mapToResponseDTO(updatedBooking);
+    }
+
+    /**
+     * Delete a booking and restore remaining sessions to contract
+     * 
+     * Business Logic:
+     * 1. Find booking by ID
+     * 2. Get the associated contract
+     * 3. Restore remaining_sessions by incrementing by 1
+     * 4. Delete the booking
+     * 
+     * @param bookingId Booking ID to delete
+     * @throws IllegalArgumentException if booking not found
      */
     @Transactional
     public void deleteBooking(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
+
+        // Get the contract and restore remaining sessions
+        Contract contract = booking.getContract();
+        if (contract.getRemainingSessions() != null && contract.getRemainingSessions() < contract.getTotalSessions()) {
+            contract.setRemainingSessions(contract.getRemainingSessions() + 1);
+            contractRepository.save(contract);
+        }
+
+        // Delete the booking
         bookingRepository.delete(booking);
     }
 

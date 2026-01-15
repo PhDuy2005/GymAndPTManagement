@@ -45,6 +45,12 @@ public class Contract {
     @Column(name = "end_date")
     private LocalDate endDate;
 
+    @Column(name = "total_sessions")
+    private Integer totalSessions;
+
+    @Column(name = "remaining_sessions")
+    private Integer remainingSessions;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 50)
     private ContractStatusEnum status;
