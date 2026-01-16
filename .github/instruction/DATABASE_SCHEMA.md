@@ -624,6 +624,15 @@ public class ServicePackage {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
+    @Column(name = "description", columnDefinition = "MEDIUMTEXT")
+    private String description;
+
+    @Column(name = "duration_in_days")
+    private Integer durationInDays;
+
+    @Column(name = "number_of_sessions")
+    private Integer numberOfSessions;
+
     // Audit fields (bắt buộc)
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -644,6 +653,12 @@ public class ServicePackage {
         if (isActive == null) {
             isActive = true;
         }
+        if (price == null) {
+            price = BigDecimal.ZERO;
+        }
+        if (numberOfSessions == null) {
+            numberOfSessions = 0;
+        }
     }
 
     @PreUpdate
@@ -660,6 +675,9 @@ public class ServicePackage {
 - `price`: DECIMAL(15,2), Not Null
 - `type`: VARCHAR(50), Nullable
 - `is_active`: BOOLEAN, Not Null, Default: true
+- `description`: MEDIUMTEXT, Nullable
+- `duration_in_days`: INT, Nullable
+- `number_of_sessions`: INT, Nullable
 - `created_at`: TIMESTAMP, Not Null
 - `updated_at`: TIMESTAMP, Nullable
 - `created_by`: VARCHAR(100), Nullable
@@ -693,6 +711,12 @@ public class AdditionalService {
     @Column(name = "suggest_sell_price", precision = 15, scale = 2)
     private BigDecimal suggestSellPrice;
 
+    @Column(name = "description", length = 1000)
+    private String description;
+
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive;
+
     // Audit fields (bắt buộc)
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -710,6 +734,9 @@ public class AdditionalService {
     protected void onCreate() {
         createdAt = Instant.now();
         createdBy = SecurityUtil.getCurrentUserLogin().orElse("system");
+        if (isActive == null) {
+            isActive = true;
+        }
     }
 
     @PreUpdate
@@ -725,6 +752,8 @@ public class AdditionalService {
 - `name`: VARCHAR(255), Not Null
 - `cost_price`: DECIMAL(15,2), Nullable
 - `suggest_sell_price`: DECIMAL(15,2), Nullable
+- `description`: VARCHAR(1000), Nullable
+- `is_active`: BOOLEAN, Not Null, Default: true
 - `created_at`: TIMESTAMP, Not Null
 - `updated_at`: TIMESTAMP, Nullable
 - `created_by`: VARCHAR(100), Nullable
@@ -837,11 +866,17 @@ public class Slot {
     @Column(name = "slot_id")
     private Long id;
 
+    @Column(name = "slot_name", nullable = false)
+    private String slotName;
+
     @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
 
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
+
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive;
 
     // Audit fields (bắt buộc)
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -872,8 +907,10 @@ public class Slot {
 
 **Columns**:
 - `slot_id`: BIGINT, Primary Key, Auto Increment
+- `slot_name`: VARCHAR(255), Not Null
 - `start_time`: TIME, Not Null
 - `end_time`: TIME, Not Null
+- `is_active`: BOOLEAN, Not Null, Default: true
 - `created_at`: TIMESTAMP, Not Null
 - `updated_at`: TIMESTAMP, Nullable
 - `created_by`: VARCHAR(100), Nullable
@@ -907,7 +944,7 @@ public class AvailableSlot {
     private Slot slot;
 
     @Column(name = "day_of_week", length = 20)
-    private String dayOfWeek;
+    private DayOfWeekEnum dayOfWeek;
 
     @Column(name = "is_available", nullable = false)
     private Boolean isAvailable;
@@ -1128,6 +1165,10 @@ public class BodyMetrics {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
+    @ManyToOne
+    @JoinColumn(name = "measured_by")
+    private User measuredBy;
+
     @Column(name = "measured_date", nullable = false)
     private LocalDate measuredDate;
 
@@ -1176,6 +1217,7 @@ public class BodyMetrics {
 **Columns**:
 - `metric_id`: BIGINT, Primary Key, Auto Increment
 - `member_id`: BIGINT, Not Null, Foreign Key -> members(member_id)
+- `measured_by`: BIGINT, Nullable, Foreign Key -> users(user_id)
 - `measured_date`: DATE, Not Null
 - `weight`: DECIMAL(5,2), Nullable
 - `height`: DECIMAL(5,2), Nullable
