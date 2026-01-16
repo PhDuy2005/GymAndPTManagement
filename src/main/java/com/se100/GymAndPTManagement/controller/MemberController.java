@@ -2,9 +2,6 @@ package com.se100.GymAndPTManagement.controller;
 
 import java.util.List;
 
-import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,17 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateMemberDTO;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateMemberDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResMemberDTO;
-import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
-import com.se100.GymAndPTManagement.domain.table.Member;
 import com.se100.GymAndPTManagement.service.MemberService;
 import com.se100.GymAndPTManagement.util.FormatRestResponse;
 import com.se100.GymAndPTManagement.util.annotation.ApiMessage;
-import com.turkraft.springfilter.boot.Filter;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 
 /**
@@ -49,12 +39,6 @@ public class MemberController {
         this.memberService = memberService;
     }
 
-    @Operation(summary = "Create new member")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Member created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
     @PostMapping
     @ApiMessage("Tạo hội viên mới")
     public ResponseEntity<ResMemberDTO> createMember(@Valid @RequestBody ReqCreateMemberDTO request) {
@@ -62,11 +46,6 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.CREATED).body(member);
     }
 
-    @Operation(summary = "Get all members")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
     @GetMapping
     @ApiMessage("Lấy danh sách các hội viên")
     public ResponseEntity<List<ResMemberDTO>> getAllMembers() {
@@ -74,25 +53,6 @@ public class MemberController {
         return ResponseEntity.ok(members);
     }
 
-    @Operation(summary = "Fetch members with filter and pagination")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    @GetMapping("/fetch")
-    @ApiMessage("Fetch members with filter")
-    public ResponseEntity<ResultPaginationDTO> fetchMembersWithFilter(
-            @Parameter(name = "filter", description = "Spring-Filter expression. VD: name=='Yoga' and active==true", required = false, example = "name=='Yoga' and active==true") @Filter Specification<Member> specification,
-            @ParameterObject Pageable pageable) {
-        ResultPaginationDTO members = memberService.handleFetchMembers(specification, pageable);
-        return ResponseEntity.ok(members);
-    }
-
-    @Operation(summary = "Get all active members")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
     @GetMapping("/active")
     @ApiMessage("Lấy danh sách các hội viên đang hoạt động")
     public ResponseEntity<List<ResMemberDTO>> getAllActiveMembers() {
@@ -100,13 +60,6 @@ public class MemberController {
         return ResponseEntity.ok(members);
     }
 
-    @Operation(summary = "Search member by ID, email, or CCCD")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "404", description = "Member not found"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "400", description = "Invalid search parameters")
-    })
     @GetMapping("/search")
     @ApiMessage("Lấy hội viên theo mã hội viên, email, hoặc số CCCD")
     public ResponseEntity<ResMemberDTO> getMemberById(
@@ -131,13 +84,6 @@ public class MemberController {
         return ResponseEntity.ok(member);
     }
 
-    @Operation(summary = "Update member information")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Member updated successfully"),
-            @ApiResponse(responseCode = "404", description = "Member not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
     @PutMapping("/{id}")
     @ApiMessage("Cập nhật thông tin hội viên")
     public ResponseEntity<ResMemberDTO> updateMember(
@@ -147,12 +93,6 @@ public class MemberController {
         return ResponseEntity.ok(member);
     }
 
-    @Operation(summary = "Delete member (set status to INACTIVE)")
-    @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Member deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Member not found"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
     @DeleteMapping("/{id}")
     @ApiMessage("Xóa hội viên (chuyển trạng thái thành INACTIVE)")
     public ResponseEntity<Void> deleteMember(@PathVariable("id") Long memberId) {

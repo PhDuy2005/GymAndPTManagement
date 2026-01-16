@@ -2,12 +2,7 @@ package com.se100.GymAndPTManagement.service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +11,6 @@ import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateMemberDTO;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateMemberDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResMemberDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResUserDTO;
-import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
 import com.se100.GymAndPTManagement.domain.table.Member;
 import com.se100.GymAndPTManagement.domain.table.Role;
 import com.se100.GymAndPTManagement.domain.table.User;
@@ -38,7 +32,6 @@ public class MemberService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-    Logger logger = Logger.getLogger(MemberService.class.getName());
 
     // =========================================
     // Calculation Helpers
@@ -60,30 +53,20 @@ public class MemberService {
     // CRUD Methods
     // =========================================
 
-    /**
-     * Create new member
-     * 
-     * @param request DTO containing member creation info
-     * @return Response DTO with created member data
-     * @throws IllegalArgumentException if email or CCCD already exists
-     */
     @Transactional
     public ResMemberDTO createMember(ReqCreateMemberDTO request) {
         // Validate email không trùng
         if (userRepository.existsByEmail(request.getEmail())) {
-            logger.warning(">>>MEMBER SERVICE - CREATE MEMBER: Email already exists - " + request.getEmail());
-            throw new IllegalArgumentException("Email đã tồn tại trong hệ thống");
+            throw new RuntimeException("Email đã tồn tại trong hệ thống");
         }
 
         // Validate CCCD không trùng (nếu có)
         if (request.getCccd() != null && !request.getCccd().isEmpty()) {
             if (memberRepository.existsByCccd(request.getCccd())) {
-                logger.warning(">>>MEMBER SERVICE - CREATE MEMBER: CCCD already exists - " + request.getCccd());
-                throw new IllegalArgumentException("CCCD đã tồn tại trong hệ thống");
+                throw new RuntimeException("CCCD đã tồn tại trong hệ thống");
             }
         }
 
-        logger.info(">>>MEMBER SERVICE - CREATE MEMBER: Validation passed for email and CCCD.");
         System.out.println(">>>MEMBER SERVICE - CREATE MEMBER: Validation passed.");
 
         // Get MEMBER role
@@ -137,29 +120,6 @@ public class MemberService {
                 .toList();
     }
 
-    /**
-     * Fetch members with pagination and filter
-     */
-    @Transactional(readOnly = true)
-    public ResultPaginationDTO handleFetchMembers(Specification<Member> specification, Pageable pageable) {
-        Page<Member> pageMembers = memberRepository.findAll(specification, pageable);
-        ResultPaginationDTO resultPaginationDTO = new ResultPaginationDTO();
-        ResultPaginationDTO.Meta meta = ResultPaginationDTO.Meta.builder()
-                .page(pageable.getPageNumber() + 1)
-                .pageSize(pageable.getPageSize())
-                .totalPages(pageMembers.getTotalPages())
-                .totalItems(pageMembers.getTotalElements())
-                .build();
-
-        resultPaginationDTO.setMeta(meta);
-        List<ResMemberDTO> result = pageMembers.getContent()
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-        resultPaginationDTO.setResult(result);
-        return resultPaginationDTO;
-    }
-
     @Transactional
     public List<ResMemberDTO> getAllActiveMembers() {
         List<Member> members = memberRepository.findAll();
@@ -170,13 +130,6 @@ public class MemberService {
                 .toList();
     }
 
-    /**
-     * Get member by ID
-     * 
-     * @param memberId
-     * @return ResMemberDTO containing member data
-     * @throws NoSuchElementException if member not found
-     */
     @Transactional
     public ResMemberDTO getMemberById(Long memberId) {
         Member member = memberRepository.findById(memberId)
@@ -185,13 +138,6 @@ public class MemberService {
         return convertToDTO(member);
     }
 
-    /**
-     * Get member by email
-     * 
-     * @param email
-     * @return ResMemberDTO containing member data
-     * @throws NoSuchElementException if member not found
-     */
     @Transactional
     public ResMemberDTO getMemberByEmail(String email) {
         User user = userRepository.findByEmail(email)
@@ -202,13 +148,6 @@ public class MemberService {
         return convertToDTO(member);
     }
 
-    /**
-     * Get member by CCCD
-     * 
-     * @param cccd
-     * @return ResMemberDTO containing member data
-     * @throws NoSuchElementException if member not found
-     */
     @Transactional
     public ResMemberDTO getMemberByCccd(String cccd) {
         Member member = memberRepository.findByCccd(cccd)
@@ -217,14 +156,6 @@ public class MemberService {
         return convertToDTO(member);
     }
 
-    /**
-     * Update member information
-     * 
-     * @param memberId
-     * @param request  DTO containing updated member info
-     * @return ResMemberDTO containing updated member data
-     * @throws NoSuchElementException if member not found
-     */
     @Transactional
     public ResMemberDTO updateMember(Long memberId, ReqUpdateMemberDTO request) {
         Member member = memberRepository.findById(memberId)
@@ -281,12 +212,6 @@ public class MemberService {
         return convertToDTO(updatedMember);
     }
 
-    /**
-     * Delete member (soft delete by setting User status to INACTIVE)
-     * 
-     * @param memberId
-     * @throws NoSuchElementException if member not found
-     */
     @Transactional
     public void deleteMember(Long memberId) {
         Member member = memberRepository.findById(memberId)

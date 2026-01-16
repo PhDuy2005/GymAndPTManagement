@@ -44,91 +44,6 @@
 
 <!-- New logs will be added below this line -->
 
-## [2026-01-11 20:28:23] - Add Pagination and Specification Support to All Controllers
-- **Model**: GitHub Copilot (Claude Sonnet 4.5)
-- **User**: PhDuy2005
-- **Files Modified/Created**:
-  - `src/main/java/com/se100/GymAndPTManagement/domain/responseDTO/ResultPaginationDTO.java`
-  - `src/main/java/com/se100/GymAndPTManagement/repository/AdditionalServiceRepository.java`
-  - `src/main/java/com/se100/GymAndPTManagement/repository/MemberRepository.java`
-  - `src/main/java/com/se100/GymAndPTManagement/repository/PersonalTrainerRepository.java`
-  - `src/main/java/com/se100/GymAndPTManagement/repository/ServicePackageRepository.java`
-  - `src/main/java/com/se100/GymAndPTManagement/service/AdditionalServiceService.java`
-  - `src/main/java/com/se100/GymAndPTManagement/service/MemberService.java`
-  - `src/main/java/com/se100/GymAndPTManagement/service/PersonalTrainerService.java`
-  - `src/main/java/com/se100/GymAndPTManagement/service/ServicePackageService.java`
-  - `src/main/java/com/se100/GymAndPTManagement/controller/AdditionalServiceController.java`
-  - `src/main/java/com/se100/GymAndPTManagement/controller/MemberController.java`
-  - `src/main/java/com/se100/GymAndPTManagement/controller/PersonalTrainerController.java`
-  - `src/main/java/com/se100/GymAndPTManagement/controller/ServicePackageController.java`
-- **Description**: Thêm hỗ trợ pagination và specification filtering cho tất cả controllers. Tạo ResultPaginationDTO với Meta class (page, pageSize, totalPages, totalItems). Cập nhật tất cả Repository để extends JpaSpecificationExecutor. Thêm method handleFetch{Entity} vào tất cả Service với Specification và Pageable parameters. Thêm endpoint GET /fetch vào tất cả Controller (AdditionalServiceController, MemberController, PersonalTrainerController, ServicePackageController) với @Filter annotation và Pageable support. Logging đầy đủ cho các fetch endpoints.
-
----
-
-## [2026-01-11 20:16:00] - Update AdditionalServiceController Documentation
-- **Model**: GitHub Copilot (Claude Sonnet 4.5)
-- **User**: PhDuy2005
-- **Files Modified/Created**:
-  - `.github/instruction/controller-example/AdditionalServiceController.md`
-- **Description**: Cập nhật documentation cho AdditionalServiceController với tất cả 6 endpoints hiện có: POST (Create), GET (Get All), GET by ID, GET /active, PUT /activate, DELETE (Deactivate). Thêm thông tin chi tiết về isActive field, soft delete mechanism, business rules cho active/inactive status. Cập nhật logging examples, error responses, và notes về việc không có UPDATE endpoint. Version 1.1.
-
----
-
-## [2026-01-11 19:57:06] - Implement GET ALL, GET by ID, GET active, PUT activate APIs for AdditionalService
-- **Model**: GitHub Copilot (Claude Sonnet 4.5)
-- **User**: PhDuy2005
-- **Files Modified/Created**:
-  - `src/main/java/com/se100/GymAndPTManagement/domain/table/AdditionalService.java`
-  - `src/main/java/com/se100/GymAndPTManagement/repository/AdditionalServiceRepository.java`
-  - `src/main/java/com/se100/GymAndPTManagement/service/AdditionalServiceService.java`
-  - `src/main/java/com/se100/GymAndPTManagement/controller/AdditionalServiceController.java`
-  - `src/main/java/com/se100/GymAndPTManagement/domain/responseDTO/ResAdditionalServiceDTO.java`
-- **Description**: Thêm field isActive vào AdditionalService entity với default value true trong @PrePersist. Thêm custom query findByIsActive vào Repository. Implement 4 methods trong Service: getAllAdditionalServices, getAdditionalServiceById (với exception handling), getAllActiveAdditionalServices, activateAdditionalService. Implement 4 GET/PUT endpoints trong Controller với logging đầy đủ và @ApiMessage. Cập nhật ResAdditionalServiceDTO để include isActive field.
-
----
-
-## [2026-01-11 19:51:58] - Implement POST API for AdditionalService
-- **Model**: GitHub Copilot (Claude Sonnet 4.5)
-- **User**: PhDuy2005
-- **Files Modified/Created**:
-  - `src/main/java/com/se100/GymAndPTManagement/domain/requestDTO/ReqCreateAdditionalServiceDTO.java`
-  - `src/main/java/com/se100/GymAndPTManagement/domain/responseDTO/ResAdditionalServiceDTO.java`
-  - `src/main/java/com/se100/GymAndPTManagement/service/AdditionalServiceService.java`
-  - `src/main/java/com/se100/GymAndPTManagement/controller/AdditionalServiceController.java`
-- **Description**: Implement POST API để tạo additional service mới. Tạo ReqCreateAdditionalServiceDTO với validation (name required, costPrice và suggestSellPrice >= 0), ResAdditionalServiceDTO với static method fromEntity. Implement createAdditionalService trong Service với builder pattern. Implement POST endpoint trong Controller với @Valid, @ApiMessage, logging INFO khi tạo thành công, và return HTTP 201 Created.
-
----
-
-## [2026-01-11 19:48:37] - Create AdditionalService Controller, Service, Repository & Documentation
-- **Model**: GitHub Copilot (Claude Sonnet 4.5)
-- **User**: PhDuy2005
-- **Files Modified/Created**:
-  - `src/main/java/com/se100/GymAndPTManagement/repository/AdditionalServiceRepository.java`
-  - `src/main/java/com/se100/GymAndPTManagement/service/AdditionalServiceService.java`
-  - `src/main/java/com/se100/GymAndPTManagement/controller/AdditionalServiceController.java`
-  - `.github/instruction/controller-example/AdditionalServiceController.md`
-- **Description**: Tạo structure cho Controller-Service-Repository của AdditionalService với Dependency Injection. Controller có khai báo SLF4J Logger theo quy tắc mới. Tạo file documentation đầy đủ cho Controller bao gồm 6 endpoints: Create, Get All, Get by ID, Update, Delete, Search by Name với request/response examples, business rules, exceptions, và logging format.
-
----
-
-## [2026-01-11 19:47:34] - Update INSTRUCTION.md - Add Controller Logging Requirements
-- **Model**: GitHub Copilot (Claude Sonnet 4.5)
-- **User**: PhDuy2005
-- **Files Modified/Created**:
-  - `.github/instruction/INSTRUCTION.md`
-- **Description**: Bổ sung yêu cầu BẮT BUỘC về logging trong Controller vào INSTRUCTION.md. Thêm section "Logging trong Controller" với quy tắc sử dụng SLF4J Logger, format log message chuẩn (prefix >>CONTROLLER_NAME), và các ví dụ cho INFO log (request/response) và ERROR log (exception). Tham khảo implementation từ ServicePackageController.java.
-
----
-
-## [2026-01-11 19:45:20] - Create and Fix AdditionalService Entity
-- **Model**: GitHub Copilot (Claude Sonnet 4.5)
-- **User**: PhDuy2005
-- **Files Modified/Created**:
-  - `src/main/java/com/se100/GymAndPTManagement/domain/table/AdditionalService.java`
-- **Description**: Tạo entity AdditionalService theo đúng schema trong DATABASE_SCHEMA.md với các fields: additional_service_id (PK), name, costPrice, suggestSellPrice và audit fields (created_at, updated_at, created_by, updated_by). Thêm metadata header comment theo chuẩn INSTRUCTION.md.
-
----
-
 ## [2026-01-08 11:20:37] - Create PersonalTrainer Repository, Service, Controller & DTOs
 - **Model**: GitHub Copilot (Claude Sonnet 4.5)
 - **User**: PhDuy2005
@@ -295,3 +210,496 @@
   - `.github/instruction/algo/search-filter.md`
   - `.github/logs/generation-log.md`
 - **Description**: Extract 4 thuật toán còn lại từ ALGORITHMS.md vào các file riêng trong folder algo/: Password Strength Validation (Data Validation category), Audit Trail (Utilities category), Pagination (Pagination category), và Search & Filter (Search & Filter category). Cập nhật ALGORITHMS.md index với links đến các file mới. Xóa phần content dư thừa (line 164-356) khỏi ALGORITHMS.md. Hoàn tất quá trình restructure - giờ ALGORITHMS.md chỉ là file index/navigation thuần túy.
+
+---
+
+## [2026-01-08 14:30:00] - Tao Entity Contract
+- **Model**: GitHub Copilot (Claude Haiku 4.5)
+- **User**: KStuv
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/domain/table/Contract.java`
+- **Description**: Tao entity Contract theo schema trong DATABASE_SCHEMA.md. Entity co 2 relationships: n:1 voi Member (bat buoc), n:1 voi PersonalTrainer (main_pt_id, nullable). Cac truong: startDate, endDate, status, notes (TEXT), signedAt. Day du audit fields (created_at, updated_at, created_by, updated_by) voi @PrePersist va @PreUpdate hooks su dung SecurityUtil.
+
+---
+
+## [2026-01-08 14:50:00] - Tao Contract Repository, Service, Controller va DTOs
+- **Model**: GitHub Copilot (Claude Haiku 4.5)
+- **User**: KStuv
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/repository/ContractRepository.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/requestDTO/ReqCreateContractDTO.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/responseDTO/ResContractDTO.java`
+  - `src/main/java/com/se100/GymAndPTManagement/service/ContractService.java`
+  - `src/main/java/com/se100/GymAndPTManagement/controller/ContractController.java`
+- **Description**: Tao day du Repository-Service-Controller cho Contract voi tinh nang transaction. ContractRepository co custom methods: findByMemberId(), findByMainPtId(), findByStatus(). ReqCreateContractDTO voi validation @NotNull, @NotBlank cho cac fields bat buoc. ResContractDTO chua day du thong tin contract + member name + package name/price + PT name. ContractService su dung @Transactional de dam bao ACID khi tao contract + invoice tu dong: validation kiem tra member/package/PT ton tai, startDate < endDate; tao Invoice voi totalAmount = package price, finalAmount = totalAmount, payment_status = PAID, status = COMPLETED. ContractController co 5 endpoints: POST /api/v1/contracts (tao), GET /api/v1/contracts/{id}, GET /api/v1/contracts/member/{memberId}, GET /api/v1/contracts/pt/{ptId}, GET /api/v1/contracts/status/{status}. Tat ca endpoints co @ApiMessage annotation.
+
+---
+
+## [2026-01-08 15:15:00] - Tạo Hệ Thống Quản Lý Trạng Thái Contract
+- **Model**: GitHub Copilot (Claude Haiku 4.5)
+- **User**: KStuv
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/util/enums/ContractStatusEnum.java`
+  - `src/main/java/com/se100/GymAndPTManagement/service/ContractStatusService.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/table/Contract.java` (modified)
+  - `src/main/java/com/se100/GymAndPTManagement/repository/ContractRepository.java` (modified)
+  - `src/main/java/com/se100/GymAndPTManagement/service/ContractService.java` (modified)
+- **Description**: Tạo ContractStatusEnum với 3 trạng thái (ACTIVE, EXPIRED, CANCELLED). Contract entity sử dụng @Enumerated(EnumType.STRING) cho status. ContractStatusService cung cấp: autoExpireContracts() tự động hết hạn các contract quá end_date, getRemainingDays() tính số ngày còn lại, changeContractStatus() đổi status với validation rules (ACTIVE->EXPIRED/CANCELLED, EXPIRED->CANCELLED, CANCELLED terminal).
+
+---
+
+## [2026-01-11 10:30:00] - Tạo Entity Booking
+- **Model**: GitHub Copilot (Claude Haiku 4.5)
+- **User**: KStuv
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/domain/table/Booking.java`
+- **Description**: Tạo entity Booking với 4 mối quan hệ ManyToOne: contract (bắt buộc), member (bắt buộc), realPt (nullable), slot (bắt buộc). Trường chính: booking_date (LocalDate, bắt buộc). Đầy đủ audit fields (createdAt, updatedAt, createdBy, updatedBy) với @PrePersist và @PreUpdate hooks sử dụng SecurityUtil. Sử dụng Lombok @Data, @Builder, @NoArgsConstructor, @AllArgsConstructor.
+
+---
+
+## [2026-01-11 11:30:00] - Implement Booking Management System with Dynamic Filtering
+- **Model**: GitHub Copilot (Claude Haiku 4.5)
+- **User**: KStuv
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/repository/BookingRepository.java`
+  - `src/main/java/com/se100/GymAndPTManagement/repository/SlotRepository.java`
+  - `src/main/java/com/se100/GymAndPTManagement/repository/AvailableSlotRepository.java`
+  - `src/main/java/com/se100/GymAndPTManagement/repository/ContractRepository.java` (modified)
+  - `src/main/java/com/se100/GymAndPTManagement/service/BookingService.java`
+  - `src/main/java/com/se100/GymAndPTManagement/controller/BookingController.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/requestDTO/ReqCreateBookingDTO.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/responseDTO/ResBookingDTO.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/responseDTO/ResAvailableSlotDTO.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/responseDTO/ResAvailablePTDTO.java`
+- **Description**: Tạo hệ thống quản lý booking hoàn chỉnh hỗ trợ 2 luồng lọc động (Dynamic Filtering):
+
+**Luồng 1 (PT -> Slots)**: GET /api/v1/bookings/available-slots?ptId=X&date=YYYY-MM-DD
+  - Truy vấn available_slots với điều kiện: pt_id = X, day_of_week = {ngày trong tuần từ date}, is_available = true
+  - Loại trừ các slot đã bị đặt trong bookings với real_pt_id = X và booking_date = date
+  - Trả về danh sách ResAvailableSlotDTO
+
+**Luồng 2 (Slot -> PTs)**: GET /api/v1/bookings/available-pts?slotId=X&date=YYYY-MM-DD
+  - Truy vấn available_slots với điều kiện: slot_id = X, day_of_week = {ngày trong tuần từ date}, is_available = true
+  - Loại trừ các PT đã bị đặt trong bookings với slot_id = X và booking_date = date
+  - Trả về danh sách ResAvailablePTDTO
+
+**Tạo Booking**: POST /api/v1/bookings với payload ReqCreateBookingDTO (memberId, ptId, slotId, bookingDate)
+  - Kiểm tra member tồn tại
+  - Kiểm tra member có hợp đồng ACTIVE che phủ booking_date: startDate <= bookingDate <= endDate
+  - Kiểm tra PT tồn tại
+  - Kiểm tra slot tồn tại
+  - Kiểm tra trùng lịch (duplicate): không tồn tại record với realPt.id = ptId, slot.id = slotId, bookingDate = date
+  - Lưu booking với contract_id từ hợp đồng ACTIVE tìm được
+  - Trả về ResBookingDTO
+
+**Repository Queries**:
+- BookingRepository.getAvailableSlotsForPT(): Custom @Query JPQL trả về List<Slot>
+- BookingRepository.getAvailablePTsForSlot(): Custom @Query JPQL trả về List<PersonalTrainer>
+- BookingRepository.findByRealPtIdAndSlotIdAndBookingDate(): Tìm booking trùng lặp
+- ContractRepository.findByMemberIdAndStatusAndDateRange(): Custom @Query tìm active contract với date range
+
+**Service Methods**:
+- getAvailableSlotsForPT(ptId, date): Xác định DayOfWeek, gọi repository query, map to DTOs
+- getAvailablePTsForSlot(slotId, date): Xác định DayOfWeek, gọi repository query, map to DTOs
+- createBooking(@Valid ReqCreateBookingDTO): @Transactional, validation + duplicate check + save
+- getBookingsByMember(memberId), getBookingsByPT(ptId), getBookingById(id), deleteBooking(id)
+
+**Controller Endpoints** (tất cả return ResponseEntity<RestResponse<T>>):
+- GET /api/v1/bookings/available-slots - Flow 1
+- GET /api/v1/bookings/available-pts - Flow 2
+- POST /api/v1/bookings - Tạo booking mới
+- GET /api/v1/bookings/{bookingId} - Chi tiết booking
+- GET /api/v1/bookings/member/{memberId} - Danh sách booking của member
+- GET /api/v1/bookings/pt/{ptId} - Danh sách booking của PT
+- DELETE /api/v1/bookings/{bookingId} - Xóa booking
+
+Tất cả endpoints có @ApiMessage annotation cho Swagger documentation.
+
+---
+
+## [2026-01-12 09:30:00] - Implement Check-in Log Management System
+- **Model**: GitHub Copilot (Claude Haiku 4.5)
+- **User**: KStuv
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/repository/CheckinLogRepository.java`
+  - `src/main/java/com/se100/GymAndPTManagement/service/CheckinLogService.java`
+  - `src/main/java/com/se100/GymAndPTManagement/controller/CheckinLogController.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/requestDTO/ReqCheckinDTO.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/responseDTO/ResCheckinLogDTO.java`
+- **Description**: Tạo hệ thống quản lý check-in log hoàn chỉnh với 3 thao tác chính:
+
+**CheckinLogRepository** - Custom JPQL Queries:
+- `findActiveCheckInByBookingId()`: Tìm active checkin (status = CHECKED_IN) mới nhất
+- `findLatestByBookingId()`: Tìm checkin mới nhất bất kể status
+- `hasActiveCheckin()`: Kiểm tra booking có active checkin không (status != CANCELLED)
+- `findByMemberId()`, `findByBookingId()`, `findByBookingIdAndStatus()`: Queries hỗ trợ
+
+**CheckinLogService** - 3 Business Operations:
+
+1. **checkIn(ReqCheckinDTO)** (@Transactional):
+   - Validate booking tồn tại
+   - Kiểm tra booking chưa có active checkin
+   - Tạo CheckinLog: booking, member (từ booking), checkinTime = LocalTime.now(), status = "CHECKED_IN", checkoutTime = null
+   - Map sang ResCheckinLogDTO
+
+2. **checkOut(bookingId)** (@Transactional):
+   - Tìm active checkin log (CHECKED_IN status)
+   - Update: checkoutTime = LocalTime.now(), status = "CHECKED_OUT"
+   - Lưu lại
+   - Map sang ResCheckinLogDTO
+
+3. **cancelCheckin(bookingId)** (@Transactional):
+   - Tìm latest checkin log (bất kể status)
+   - Update: status = "CANCELLED"
+   - Lưu lại
+   - Map sang ResCheckinLogDTO
+
+Plus 3 query methods: getCheckinsByMember(), getCheckinsByBooking(), getCheckinById()
+
+**CheckinLogController** - 6 REST Endpoints:
+- `POST /api/v1/checkins` - Check-in khi member đến
+- `PUT /api/v1/checkins/checkout/{bookingId}` - Check-out khi member kết thúc
+- `PUT /api/v1/checkins/cancel/{bookingId}` - Hủy check-in khi nhầm
+- `GET /api/v1/checkins/{checkinId}` - Chi tiết checkin log
+- `GET /api/v1/checkins/member/{memberId}` - Danh sách logs của member
+- `GET /api/v1/checkins/booking/{bookingId}` - Danh sách logs của booking
+
+Tất cả endpoints return `ResponseEntity<RestResponse<T>>`, có @ApiMessage annotation, error handling IllegalArgumentException.
+
+**DTOs**:
+- `ReqCheckinDTO`: bookingId (@NotNull)
+- `ResCheckinLogDTO`: checkinId, bookingId, memberId, memberName, checkinTime, checkoutTime, status, createdBy
+
+---
+
+## [2026-01-14 21:10:00] - Create Invoice and InvoiceDetail Entity Models
+- **Model**: GitHub Copilot (Claude Haiku 4.5)
+- **User**: KStuv
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/domain/table/Invoice.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/table/InvoiceDetail.java`
+- **Description**: Tạo 2 entity cho hệ thống quản lý hóa đơn và thanh toán:
+
+**Invoice Entity**:
+- Lưu thông tin hóa đơn chính cho member
+- Fields chính:
+  - `member_id`: BIGINT (n:1 relationship với Member)
+  - `total_amount`: DECIMAL(15,2) - Tổng tiền trước chiết khấu
+  - `discount_amount`: DECIMAL(15,2) - Tiền chiết khấu
+  - `final_amount`: DECIMAL(15,2) - Tiền cuối cùng phải trả
+  - `payment_method`: VARCHAR(50) - Phương thức thanh toán (CASH, BANK_TRANSFER, CARD, etc.)
+  - `payment_status`: VARCHAR(50) - Trạng thái thanh toán (PENDING, PAID, PARTIAL, OVERDUE)
+  - `status`: VARCHAR(50) - Trạng thái hóa đơn (DRAFT, ISSUED, CANCELLED)
+- Đầy đủ audit fields: createdAt, updatedAt, createdBy, updatedBy
+- Lifecycle management: @PrePersist, @PreUpdate với SecurityUtil
+
+**InvoiceDetail Entity**:
+- Chi tiết dòng hóa đơn (line items)
+- Fields chính:
+  - `invoice_id`: BIGINT (n:1 relationship với Invoice)
+  - `service_id`: BIGINT - Foreign key tới ServicePackage (nullable)
+  - `additional_service_id`: BIGINT - Foreign key tới AdditionalService (nullable)
+  - `quantity`: INT - Số lượng dịch vụ
+  - `unit_price`: DECIMAL(15,2) - Giá đơn vị
+  - `total_amount`: DECIMAL(15,2) - Thành tiền = quantity * unit_price
+- Hỗ trợ tính toán chi tiết các khoản phí từ service packages hoặc additional services
+- Đầy đủ audit fields: createdAt, updatedAt, createdBy, updatedBy
+- Lifecycle management: @PrePersist, @PreUpdate với SecurityUtil
+
+**Design Patterns**:
+- ManyToOne relationship: Invoice → Member, InvoiceDetail → Invoice
+- Optional ManyToOne: InvoiceDetail có thể liên kết với ServicePackage HOẶC AdditionalService
+- BigDecimal sử dụng cho tất cả monetary values (precision=15, scale=2)
+- Lombok @Builder, @Data, @NoArgsConstructor, @AllArgsConstructor
+- Jakarta Persistence annotations (@Entity, @Table, @Column, @JoinColumn)
+
+---
+
+## [2026-01-15 01:30:00] - Update Contract Service with Auto-calculated End Date
+- **Model**: GitHub Copilot (Claude Haiku 4.5)
+- **User**: KStuv
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/service/ContractService.java` (Modified)
+  - `src/main/java/com/se100/GymAndPTManagement/domain/requestDTO/ReqCreateContractDTO.java` (Modified)
+  - `src/main/java/com/se100/GymAndPTManagement/controller/ContractController.java` (Modified)
+- **Description**: Cập nhật hệ thống quản lý contract để tự động tính toán `end_date` dựa trên `duration_in_days` từ ServicePackage:
+
+**ContractService.createContractWithInvoice() - Logic Changes**:
+- **Auto-calculate End Date**: `endDate = startDate + duration_in_days` (từ ServicePackage)
+  - Sử dụng `LocalDate.plusDays(duration)` để tính toán chính xác
+- **Validation `duration_in_days`**: Kiểm tra ServicePackage có valid duration (> 0)
+  - Nếu null hoặc <= 0, throw `IllegalArgumentException` với thông báo rõ ràng
+- **Validation `startDate`**: Phải là ngày hiện tại hoặc tương lai
+  - Ngày quá khứ không được phép
+- **Validation `endDate` (nếu client gửi)**: 
+  - Nếu client cung cấp endDate, kiểm tra nó PHẢI bằng calculated value
+  - Nếu không trùng, throw `IllegalArgumentException` với chi tiết (expected vs provided)
+  - Thông báo rõ công thức: "endDate = startDate + X days"
+- **Exception Type**: Đổi từ `RuntimeException` → `IllegalArgumentException` (phù hợp hơn cho validation)
+
+**ReqCreateContractDTO - DTO Changes**:
+- **endDate field**: Từ `@NotNull` → Optional (nullable)
+- **startDate validation**: Thêm `@FutureOrPresent` annotation
+- **Javadoc**: Giải thích rõ endDate sẽ được tự động tính từ duration_in_days
+- **Flexibility**: Client có thể:
+  - Chỉ gửi startDate → hệ thống tự động tính endDate
+  - Hoặc gửi cả 2 để verify, endDate PHẢI match calculated value
+
+**ContractController - Error Handling Improvements**:
+- **Phân biệt exception types**:
+  - `IllegalArgumentException` (business validation) → HTTP 400
+  - Generic `Exception` (server errors) → HTTP 500
+- **Better context**: Thêm descriptive error messages
+- **Backward compatible**: API endpoint vẫn tương tự, chỉ error handling tốt hơn
+
+**Design Philosophy**:
+- **DRY Principle**: Tránh duplication - duration được define tại ServicePackage, không lặp lại ở Contract
+- **Single Source of Truth**: duration_in_days chỉ quản lý tại ServicePackage
+- **Fail-fast Validation**: Kiểm tra duration trước khi tính toán
+- **Clear API Contract**: Javadoc giải thích rõ behavior cho developers
+
+**Unmodified Files** (vẫn hoạt động bình thường):
+- `Contract.java` - Entity vẫn có fields startDate & endDate
+- `ContractRepository.java` - Queries không cần thay đổi
+- `ResContractDTO.java` - Vẫn trả về cả startDate & endDate
+- `ContractStatusEnum.java` - Enum values không đổi
+
+---
+
+## [2026-01-15 14:45:00] - Implement Invoice and InvoiceDetail Auto-Creation on Contract Creation
+- **Model**: GitHub Copilot (Claude Haiku 4.5)
+- **User**: KStuv
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/domain/requestDTO/ReqCreateContractDTO.java` (Modified)
+  - `src/main/java/com/se100/GymAndPTManagement/domain/table/Invoice.java` (Modified)
+  - `src/main/java/com/se100/GymAndPTManagement/repository/InvoiceRepository.java` (Created)
+  - `src/main/java/com/se100/GymAndPTManagement/repository/InvoiceDetailRepository.java` (Created)
+  - `src/main/java/com/se100/GymAndPTManagement/service/ContractService.java` (Modified)
+- **Description**: Implement tính năng auto-tạo Invoice và InvoiceDetail khi tạo contract thành công với xử lý chiết khấu và trạng thái thanh toán:
+
+**ReqCreateContractDTO - DTO Changes**:
+- Thêm field `private BigDecimal discountAmount` - Tiền chiết khấu được nhập từ form (default 0 nếu null)
+- Được sử dụng để tính `final_amount = total_amount - discount_amount`
+
+**InvoiceRepository - Created**:
+- `extends JpaRepository<Invoice, Long>`
+- Query method: `findByMemberId(Long memberId)` - Tìm hóa đơn của member
+
+**InvoiceDetailRepository - Created**:
+- `extends JpaRepository<InvoiceDetail, Long>`
+- Query method: `findByInvoiceId(Long invoiceId)` - Tìm chi tiết hóa đơn theo invoice
+
+**Invoice.java - Entity Changes**:
+- Import: `PaymentStatusEnum`
+- Field `paymentStatus`: Đổi từ `String` → `@Enumerated(EnumType.STRING) PaymentStatusEnum paymentStatus`
+- Sử dụng enum type-safe thay vì String
+
+**ContractService.java - Auto-Creation Logic**:
+
+**Quy trình tạo Invoice & InvoiceDetail** (khi contract tạo thành công):
+
+1. **Lấy discount từ request**: `discountAmount = request.getDiscountAmount() ?? BigDecimal.ZERO`
+   - Nếu client không cung cấp, default = 0
+
+2. **Lấy total amount**: `totalAmount = servicePackage.getPrice()`
+   - Lấy giá từ service package được chọn
+
+3. **Validate discount**: `discountAmount <= totalAmount`
+   - Nếu vượt quá total, throw `IllegalArgumentException`
+
+4. **Tính final amount**: `finalAmount = totalAmount - discountAmount`
+   - Chiết khấu được trừ trực tiếp từ tổng tiền
+
+5. **Tạo Invoice Entity**:
+   - `member`: Member được chọn
+   - `totalAmount`: Giá service package (trước chiết khấu)
+   - `discountAmount`: Chiết khấu từ form
+   - `finalAmount`: Tiền cuối cùng = totalAmount - discountAmount
+   - `paymentMethod`: Phương thức từ form
+   - `paymentStatus`: **PaymentStatusEnum.UNPAID** (default)
+   - `status`: **"ISSUED"** (hóa đơn được phát hành)
+
+6. **Lưu Invoice**:
+   - `invoiceRepository.save(invoice)` → Lưu và get back savedInvoice
+
+7. **Tạo InvoiceDetail**:
+   - `invoice`: Link tới Invoice vừa tạo
+   - `servicePackage`: Service package từ contract (KHÔNG null)
+   - `additionalService`: **null** (tạm thời bỏ qua additional services)
+   - `quantity`: **1** (luôn là 1 cho service package)
+   - `unitPrice`: `servicePackage.getPrice()`
+   - `totalAmount`: `servicePackage.getPrice()` (quantity × unitPrice = 1 × price)
+
+8. **Lưu InvoiceDetail**:
+   - `invoiceDetailRepository.save(invoiceDetail)`
+
+9. **Return response**: Trả về mapToResDTO(savedContract)
+
+**Transaction Safety**:
+- Tất cả operations (Contract, Invoice, InvoiceDetail) nằm trong `@Transactional` boundary
+- Nếu bất kỳ bước nào fail, tất cả sẽ rollback
+
+**Data Flow**:
+- Contract + Invoice + InvoiceDetail được create cùng lúc
+- Invoice luôn được tạo khi contract create (không optional)
+- Mỗi contract = 1 Invoice = 1+ InvoiceDetail (hiện tại luôn 1)
+
+**Additional Services**:
+- Deferred: Additional services không được integrate vào Invoice workflow lúc này
+- Để cho sau: Có thể thêm additional services vào InvoiceDetail sau
+
+**Design Patterns**:
+- **Fail-fast validation**: Check discount trước khi tính toán
+- **Type-safe enums**: PaymentStatusEnum thay vì String "UNPAID"
+- **Immutable default values**: PaymentStatusEnum.UNPAID, status "ISSUED" là constants
+- **Builder pattern**: Sử dụng Lombok @Builder để tạo entities
+- **Defensive null-check**: `discountAmount != null ? discountAmount : BigDecimal.ZERO`
+
+---
+
+## [2026-01-16 01:30:00] - Implement Additional Service Invoice Creation Flow
+- **Model**: GitHub Copilot (Claude Haiku 4.5)
+- **User**: KStuv
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/domain/requestDTO/ReqCreateAdditionalServiceInvoiceDTO.java` (Created)
+  - `src/main/java/com/se100/GymAndPTManagement/domain/responseDTO/ResInvoiceDTO.java` (Created)
+  - `src/main/java/com/se100/GymAndPTManagement/domain/responseDTO/ResInvoiceDetailDTO.java` (Created)
+  - `src/main/java/com/se100/GymAndPTManagement/service/InvoiceService.java` (Created)
+  - `src/main/java/com/se100/GymAndPTManagement/controller/InvoiceController.java` (Created)
+- **Description**: Implement complete flow để tạo invoice cho đơn đặt dịch vụ bổ sung (additional services). Flow: Additional Service list → Click "Order" → Invoice form (member dropdown, quantity input, auto-calculate amounts, discount input, payment method selection) → Submit → Create Invoice + InvoiceDetail.
+
+**ReqCreateAdditionalServiceInvoiceDTO**:
+- Fields: additionalServiceId, memberId, quantity, discountAmount (optional), paymentMethod, notes
+- Validation: additionalServiceId, memberId, quantity (@Min 1), paymentMethod (@NotBlank)
+- Tương tự ReqCreateContractDTO pattern
+
+**ResInvoiceDetailDTO**:
+- Fields: detailId, invoiceId, servicePackageId, servicePackageName, additionalServiceId, additionalServiceName, quantity, unitPrice, totalAmount, createdAt
+- Static method `fromEntity()` để convert từ InvoiceDetail JPA entity
+- Support cả service package (từ contract invoices) và additional service (từ order invoices)
+
+**ResInvoiceDTO**:
+- Fields: invoiceId, memberId, memberName, totalAmount, discountAmount, finalAmount, paymentMethod, paymentStatus (PaymentStatusEnum), status, details (List<ResInvoiceDetailDTO>), createdAt, updatedAt, createdBy
+- Static method `fromEntity()` để convert từ Invoice entity với details list
+- Include memberName từ Member.user.fullName
+
+**InvoiceService - createInvoiceForAdditionalService() - 14 Steps**:
+
+1. **Log request** - Log info với service ID, member ID, quantity
+2. **Fetch member** - `memberRepository.findById(memberId)` hoặc throw IllegalArgumentException "Member not found"
+3. **Fetch additional service** - `additionalServiceRepository.findById(serviceId)` hoặc throw
+4. **Validate active** - Check `additionalService.getIsActive()` == true, nếu không throw "Service not active"
+5. **Validate quantity** - Check quantity > 0, nếu không throw "Quantity must be > 0"
+6. **Get unit price** - Lấy `additionalService.getSuggestSellPrice()`, validate != null && >= 0
+7. **Calculate totalAmount** - `unitPrice × quantity`
+8. **Log calculation** - Debug log: Quantity, Unit Price, Total Amount
+9. **Get discount** - `request.getDiscountAmount() ?? BigDecimal.ZERO`
+10. **Validate discount** - Check `discount <= totalAmount`, nếu không throw "Discount exceeds total"
+11. **Calculate finalAmount** - `totalAmount - discountAmount`
+12. **Create & save Invoice** - Builder pattern, paymentStatus = UNPAID, status = "ISSUED"
+13. **Create & save InvoiceDetail** - additionalService được set, servicePackage = null, totalAmount = quantity × unitPrice
+14. **Return ResInvoiceDTO** - Convert saved entities với static `fromEntity()` methods
+
+**InvoiceService - Other Methods**:
+
+- **getInvoiceById(invoiceId)** - Fetch invoice + details, return ResInvoiceDTO, throw "Invoice not found"
+- **getInvoicesByMemberId(memberId)** - Fetch all invoices của member, return List<ResInvoiceDTO>, verify member exists
+- **updatePaymentStatus(invoiceId, newStatus)** - Update invoice.paymentStatus, log old → new status, return ResInvoiceDTO
+
+**InvoiceController**:
+
+- **POST /api/v1/invoices/additional-service** - Create invoice
+  - Input: @Valid ReqCreateAdditionalServiceInvoiceDTO
+  - Output: HTTP 201 Created + ResInvoiceDTO
+  - Error handling: 400 Bad Request (validation/business logic), 500 Internal Server Error
+  - Logging: Request info, success with invoiceId, validation errors as warn, system errors as error
+
+- **GET /api/v1/invoices/{id}** - Get invoice by ID
+  - Output: HTTP 200 OK + ResInvoiceDTO
+  - Error: 404 Not Found
+
+- **GET /api/v1/invoices/member/{memberId}** - Get all invoices cho member
+  - Output: HTTP 200 OK + List<ResInvoiceDTO>
+  - Error: 404 Not Found (member không tồn tại)
+
+- **PUT /api/v1/invoices/{id}/payment-status** - Update payment status
+  - Input: @RequestParam PaymentStatusEnum paymentStatus
+  - Output: HTTP 200 OK + ResInvoiceDTO
+  - Error: 404 Not Found
+
+**Response Format**:
+- Success: Wrapped trong `RestResponse<T>` với `FormatRestResponse.success()` hoặc `RestResponse.builder()`
+- Status codes: 201 Created (POST), 200 OK (GET, PUT), 400 Bad Request, 404 Not Found, 500 Server Error
+- @ApiMessage annotation trên tất cả endpoints
+
+**Frontend Form Flow**:
+1. Additional Service list page → Hiển thị danh sách services, mỗi item có button "Order"
+2. Click "Order" → Modal/Page mới với form:
+   - Service name: Read-only (pre-filled từ selected service)
+   - Member dropdown: Fetch từ GET /api/v1/members hoặc GET /api/v1/members/active
+   - Quantity input: @Min(1), required
+   - Total Amount: Read-only, auto-calculated display (quantity × suggestSellPrice)
+   - Discount Amount: Optional input (default 0 if empty)
+   - Final Amount: Read-only, auto-calculated display (totalAmount - discountAmount)
+   - Payment Method: Dropdown selection (required)
+   - Submit button: POST /api/v1/invoices/additional-service với ReqCreateAdditionalServiceInvoiceDTO
+
+**Validation & Business Rules**:
+- Quantity > 0: `@Min(1)` trên field
+- Additional service phải active: Check `isActive == true`
+- Member phải tồn tại: `memberRepository.findById()` throw if not found
+- Unit price phải valid: `suggestSellPrice != null && >= 0`
+- Discount <= total: `discount.compareTo(totalAmount) <= 0`
+- All fields required except discountAmount (nullable with default 0)
+
+**Transaction Safety**:
+- Invoice + InvoiceDetail create cùng trong @Transactional
+- Nếu fail ở bất kỳ step nào, rollback tất cả
+- Khác với contract invoice (auto-create), additional service invoice là explicit user action
+
+**Data Persistence**:
+- Invoice: member_id (FK), total_amount, discount_amount, final_amount, payment_method, payment_status (UNPAID default), status ("ISSUED")
+- InvoiceDetail: invoice_id (FK), additional_service_id (FK), servicePackage_id = NULL, quantity, unit_price (từ suggestSellPrice), total_amount
+
+**Logging Strategy**:
+- **INFO**: Request start, member/service not found, invoice created, payment updated
+- **DEBUG**: Calculation details, fetch operations
+- **WARN**: Validation failures (discount exceeds, inactive service, invalid quantity)
+- **ERROR**: Unexpected exceptions with stack trace
+
+---
+
+## [2026-01-16 03:15:00] - Add Get All Bookings Endpoint for Booking List Page
+- **Model**: GitHub Copilot (Claude Haiku 4.5)
+- **User**: KStuv
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/controller/BookingController.java` (Modified)
+  - `src/main/java/com/se100/GymAndPTManagement/service/BookingService.java` (Modified)
+- **Description**: Thêm endpoint GET /api/v1/bookings để hiển thị danh sách tất cả booking trên trang booking list.
+
+**BookingController Changes**:
+- Thêm method `getAllBookings()` ở đầu controller
+- Endpoint: `GET /api/v1/bookings`
+- Return: `ResponseEntity<RestResponse<List<ResBookingDTO>>>`
+- Message: "Lấy danh sách lịch đặt thành công"
+
+**BookingService Changes**:
+- Thêm method `getAllBookings()` trước `getBookingsByMember()`
+- Logic: `bookingRepository.findAll()` → stream map to ResBookingDTO → collect
+- @Transactional(readOnly = true) - Read-only transaction vì chỉ fetch data
+
+**Frontend Flow**:
+- Trang booking list: Load tất cả bookings từ GET /api/v1/bookings
+- Display danh sách bookings với fields từ ResBookingDTO: id, contractId, memberId, memberName, ptId, ptName, slotId, slotStartTime, slotEndTime, bookingDate, createdBy
+- Có thể filter/sort tại client-side hoặc thêm pagination sau
+
+**Order of Endpoints** (trong BookingController):
+1. GET /api/v1/bookings - Get all bookings (NEW)
+2. GET /api/v1/bookings/available-slots - Available slots flow
+3. GET /api/v1/bookings/available-pts - Available PTs flow
+4. POST /api/v1/bookings - Create booking
+5. GET /api/v1/bookings/member/{memberId} - Get by member
+6. GET /api/v1/bookings/pt/{ptId} - Get by PT
+7. GET /api/v1/bookings/{bookingId} - Get by ID
+8. DELETE /api/v1/bookings/{bookingId} - Delete booking
+
