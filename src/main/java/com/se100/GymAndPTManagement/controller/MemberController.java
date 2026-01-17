@@ -100,6 +100,19 @@ public class MemberController {
         return ResponseEntity.ok(members);
     }
 
+    @Operation(summary = "Search members by name keyword")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    @GetMapping("/by-name")
+    @ApiMessage("Tìm kiếm hội viên theo tên")
+    public ResponseEntity<List<ResMemberDTO>> searchMembersByName(
+            @RequestParam("name") String name) {
+        List<ResMemberDTO> members = memberService.searchMembersByName(name);
+        return ResponseEntity.ok(members);
+    }
+
     @Operation(summary = "Search member by ID, email, or CCCD")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Success"),

@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,7 +24,6 @@ import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
 import com.se100.GymAndPTManagement.domain.table.Food;
 import com.se100.GymAndPTManagement.service.FoodService;
 import com.se100.GymAndPTManagement.util.annotation.ApiMessage;
-import com.turkraft.springfilter.boot.Filter;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -99,20 +97,6 @@ public class FoodController {
                 return ResponseEntity.ok(foods);
         }
 
-        @Operation(summary = "Fetch foods with filter and pagination")
-        @ApiResponses({
-                        @ApiResponse(responseCode = "200", description = "Success"),
-                        @ApiResponse(responseCode = "401", description = "Unauthorized")
-        })
-        @GetMapping("/fetch")
-        @ApiMessage("Fetch foods with filter")
-        public ResponseEntity<ResultPaginationDTO> fetchFoodsWithFilter(
-                        @Parameter(name = "filter", description = "Spring-Filter expression", required = false, example = "name=='Rice' and status=='ACTIVE'") @Filter Specification<Food> specification,
-                        @ParameterObject Pageable pageable) {
-                ResultPaginationDTO foods = foodService.handleFetchFoods(specification, pageable);
-                return ResponseEntity.ok(foods);
-        }
-
         @Operation(summary = "Search foods by keyword")
         @ApiResponses({
                         @ApiResponse(responseCode = "200", description = "Success"),
@@ -152,8 +136,8 @@ public class FoodController {
         @GetMapping("/by-calories")
         @ApiMessage("Lấy thực phẩm theo khoảng calories")
         public ResponseEntity<ResultPaginationDTO> getFoodsByCaloriesRange(
-                        @Parameter(description = "Minimum calories") @RequestParam BigDecimal min,
-                        @Parameter(description = "Maximum calories") @RequestParam BigDecimal max,
+                        @Parameter(description = "Minimum calories") @RequestParam("min") BigDecimal min,
+                        @Parameter(description = "Maximum calories") @RequestParam("max") BigDecimal max,
                         @ParameterObject Pageable pageable) {
                 ResultPaginationDTO foods = foodService.getFoodsByCaloriesRange(min, max, pageable);
                 return ResponseEntity.ok(foods);
@@ -167,7 +151,7 @@ public class FoodController {
         @GetMapping("/top-protein")
         @ApiMessage("Lấy danh sách thực phẩm giàu protein nhất")
         public ResponseEntity<List<ResFoodDTO>> getTopProteinFoods(
-                        @Parameter(description = "Number of results") @RequestParam(defaultValue = "10") int limit) {
+                        @Parameter(description = "Number of results") @RequestParam(defaultValue = "10", value = "limit") int limit) {
                 List<ResFoodDTO> foods = foodService.getTopProteinFoods(limit);
                 return ResponseEntity.ok(foods);
         }
@@ -180,7 +164,7 @@ public class FoodController {
         @GetMapping("/top-carb")
         @ApiMessage("Lấy danh sách thực phẩm giàu carbohydrate nhất")
         public ResponseEntity<List<ResFoodDTO>> getTopCarbFoods(
-                        @Parameter(description = "Number of results") @RequestParam(defaultValue = "10") int limit) {
+                        @Parameter(description = "Number of results") @RequestParam(defaultValue = "10", value = "limit") int limit) {
                 List<ResFoodDTO> foods = foodService.getTopCarbFoods(limit);
                 return ResponseEntity.ok(foods);
         }
@@ -193,7 +177,7 @@ public class FoodController {
         @GetMapping("/top-fat")
         @ApiMessage("Lấy danh sách thực phẩm giàu fat nhất")
         public ResponseEntity<List<ResFoodDTO>> getTopFatFoods(
-                        @Parameter(description = "Number of results") @RequestParam(defaultValue = "10") int limit) {
+                        @Parameter(description = "Number of results") @RequestParam(defaultValue = "10", value = "limit") int limit) {
                 List<ResFoodDTO> foods = foodService.getTopFatFoods(limit);
                 return ResponseEntity.ok(foods);
         }

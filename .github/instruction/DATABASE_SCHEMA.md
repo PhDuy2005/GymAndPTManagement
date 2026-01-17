@@ -1726,19 +1726,21 @@ public class Workout {
     @Column(name = "workout_id")
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "pt_id")
-    private PersonalTrainer personalTrainer;
-
-    @ManyToOne
-    @JoinColumn(name = "device_id")
-    private WorkoutDevice workoutDevice;
-
-    @Column(name = "name", nullable = false, length = 255)
+    @Column(name = "name", nullable = false, unique = true, length = 255)
     private String name;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
+
+    @Column(name = "duration")
+    private Integer duration; // in minutes
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "difficulty", length = 20)
+    private WorkoutDifficultyEnum difficulty;
+
+    @Column(name = "type", length = 100)
+    private String type;
 
     // Audit fields (bắt buộc)
     @Column(name = "created_at", nullable = false, updatable = false)

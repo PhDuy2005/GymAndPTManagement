@@ -2,18 +2,12 @@ package com.se100.GymAndPTManagement.controller;
 
 import java.util.List;
 
-import com.turkraft.springfilter.boot.Filter;
-
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,12 +17,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateAdditionalServiceDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResAdditionalServiceDTO;
-import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
-import com.se100.GymAndPTManagement.domain.table.AdditionalService;
 import com.se100.GymAndPTManagement.service.AdditionalServiceService;
 import com.se100.GymAndPTManagement.util.annotation.ApiMessage;
 
@@ -46,108 +39,108 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdditionalServiceController {
 
-    private final AdditionalServiceService additionalServiceService;
-    Logger logger = LoggerFactory.getLogger(AdditionalServiceController.class);
+        private final AdditionalServiceService additionalServiceService;
+        Logger logger = LoggerFactory.getLogger(AdditionalServiceController.class);
 
-    @Operation(summary = "Create new additional service")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Additional service created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    @PostMapping
-    @ApiMessage("Create new additional service")
-    public ResponseEntity<ResAdditionalServiceDTO> createAdditionalService(
-            @Valid @RequestBody ReqCreateAdditionalServiceDTO request) {
-        logger.info(">>ADDITIONAL SERVICE CONTROLLER: Creating new additional service with name: {}",
-                request.getName());
-        ResAdditionalServiceDTO created = additionalServiceService.createAdditionalService(request);
-        logger.info(">>ADDITIONAL SERVICE CONTROLLER: Created additional service with ID: {}", created.getId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
-    }
+        @Operation(summary = "Create new additional service")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "201", description = "Additional service created successfully"),
+                        @ApiResponse(responseCode = "400", description = "Invalid request data"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized")
+        })
+        @PostMapping
+        @ApiMessage("Create new additional service")
+        public ResponseEntity<ResAdditionalServiceDTO> createAdditionalService(
+                        @Valid @RequestBody ReqCreateAdditionalServiceDTO request) {
+                logger.info(">>ADDITIONAL SERVICE CONTROLLER: Creating new additional service with name: {}",
+                                request.getName());
+                ResAdditionalServiceDTO created = additionalServiceService.createAdditionalService(request);
+                logger.info(">>ADDITIONAL SERVICE CONTROLLER: Created additional service with ID: {}", created.getId());
+                return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        }
 
-    @Operation(summary = "Get all additional services")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    @GetMapping
-    @ApiMessage("Get all additional services")
-    public ResponseEntity<List<ResAdditionalServiceDTO>> getAllAdditionalServices() {
-        List<ResAdditionalServiceDTO> services = additionalServiceService.getAllAdditionalServices();
-        logger.info(">>ADDITIONAL SERVICE CONTROLLER: Retrieved all additional services, count: {}", services.size());
-        return ResponseEntity.ok(services);
-    }
+        @Operation(summary = "Get all additional services")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "Success"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized")
+        })
+        @GetMapping
+        @ApiMessage("Get all additional services")
+        public ResponseEntity<List<ResAdditionalServiceDTO>> getAllAdditionalServices() {
+                List<ResAdditionalServiceDTO> services = additionalServiceService.getAllAdditionalServices();
+                logger.info(">>ADDITIONAL SERVICE CONTROLLER: Retrieved all additional services, count: {}",
+                                services.size());
+                return ResponseEntity.ok(services);
+        }
 
-    @Operation(summary = "Fetch additional services with filter and pagination")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    @GetMapping("/fetch")
-    @ApiMessage("Fetch additional services with filter")
-    public ResponseEntity<ResultPaginationDTO> fetchAdditionalServicesWithFilter(
-            @Parameter(name = "filter", description = "Spring-Filter expression. VD: name=='Yoga' and active==true", required = false, example = "name=='Yoga' and active==true") @Filter Specification<AdditionalService> specification,
-            @ParameterObject Pageable pageable) {
-        ResultPaginationDTO services = additionalServiceService.handleFetchAdditionalServices(specification, pageable);
-        logger.info(">>ADDITIONAL SERVICE CONTROLLER: Fetched additional services with pagination, page: {}, size: {}",
-                pageable.getPageNumber() + 1, pageable.getPageSize());
-        return ResponseEntity.ok(services);
-    }
+        @Operation(summary = "Search additional services by name keyword")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "Success"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized")
+        })
+        @GetMapping("/by-name")
+        @ApiMessage("Search additional services by name")
+        public ResponseEntity<List<ResAdditionalServiceDTO>> searchAdditionalServicesByName(
+                        @RequestParam("name") String name) {
+                List<ResAdditionalServiceDTO> services = additionalServiceService.searchAdditionalServicesByName(name);
+                logger.info(">>ADDITIONAL SERVICE CONTROLLER: Searched additional services with name containing: {}, found: {}",
+                                name, services.size());
+                return ResponseEntity.ok(services);
+        }
 
-    @Operation(summary = "Get additional service by ID")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "404", description = "Additional service not found"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    @GetMapping("/{id}")
-    @ApiMessage("Get additional service by ID")
-    public ResponseEntity<ResAdditionalServiceDTO> getAdditionalServiceById(@PathVariable("id") Long id) {
-        ResAdditionalServiceDTO service = additionalServiceService.getAdditionalServiceById(id);
-        logger.info(">>ADDITIONAL SERVICE CONTROLLER: Retrieved additional service with ID: {}", id);
-        return ResponseEntity.ok(service);
-    }
+        @Operation(summary = "Get additional service by ID")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "Success"),
+                        @ApiResponse(responseCode = "404", description = "Additional service not found"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized")
+        })
+        @GetMapping("/{id}")
+        @ApiMessage("Get additional service by ID")
+        public ResponseEntity<ResAdditionalServiceDTO> getAdditionalServiceById(@PathVariable("id") Long id) {
+                ResAdditionalServiceDTO service = additionalServiceService.getAdditionalServiceById(id);
+                logger.info(">>ADDITIONAL SERVICE CONTROLLER: Retrieved additional service with ID: {}", id);
+                return ResponseEntity.ok(service);
+        }
 
-    @Operation(summary = "Get all active additional services")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    @GetMapping("/active")
-    @ApiMessage("Get all active additional services")
-    public ResponseEntity<List<ResAdditionalServiceDTO>> getAllActiveAdditionalServices() {
-        List<ResAdditionalServiceDTO> services = additionalServiceService.getAllActiveAdditionalServices();
-        logger.info(">>ADDITIONAL SERVICE CONTROLLER: Retrieved all active additional services, count: {}",
-                services.size());
-        return ResponseEntity.ok(services);
-    }
+        @Operation(summary = "Get all active additional services")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "Success"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized")
+        })
+        @GetMapping("/active")
+        @ApiMessage("Get all active additional services")
+        public ResponseEntity<List<ResAdditionalServiceDTO>> getAllActiveAdditionalServices() {
+                List<ResAdditionalServiceDTO> services = additionalServiceService.getAllActiveAdditionalServices();
+                logger.info(">>ADDITIONAL SERVICE CONTROLLER: Retrieved all active additional services, count: {}",
+                                services.size());
+                return ResponseEntity.ok(services);
+        }
 
-    @Operation(summary = "Activate additional service")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Additional service activated successfully"),
-            @ApiResponse(responseCode = "404", description = "Additional service not found"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    @PutMapping("/{id}/activate")
-    @ApiMessage("Activate additional service")
-    public ResponseEntity<ResAdditionalServiceDTO> activateAdditionalService(@PathVariable("id") Long id) {
-        ResAdditionalServiceDTO activated = additionalServiceService.activateAdditionalService(id);
-        logger.info(">>ADDITIONAL SERVICE CONTROLLER: Activated additional service with ID: {}", id);
-        return ResponseEntity.ok(activated);
-    }
+        @Operation(summary = "Activate additional service")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "Additional service activated successfully"),
+                        @ApiResponse(responseCode = "404", description = "Additional service not found"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized")
+        })
+        @PutMapping("/{id}/activate")
+        @ApiMessage("Activate additional service")
+        public ResponseEntity<ResAdditionalServiceDTO> activateAdditionalService(@PathVariable("id") Long id) {
+                ResAdditionalServiceDTO activated = additionalServiceService.activateAdditionalService(id);
+                logger.info(">>ADDITIONAL SERVICE CONTROLLER: Activated additional service with ID: {}", id);
+                return ResponseEntity.ok(activated);
+        }
 
-    @Operation(summary = "Deactivate additional service")
-    @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Additional service deactivated successfully"),
-            @ApiResponse(responseCode = "404", description = "Additional service not found"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    @DeleteMapping("/{id}")
-    @ApiMessage("Deactivate additional service")
-    public ResponseEntity<Void> deactivateAdditionalService(@PathVariable("id") Long id) {
-        additionalServiceService.deleteAdditionalService(id);
-        logger.info(">>ADDITIONAL SERVICE CONTROLLER: Deactivated additional service with ID: {}", id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
+        @Operation(summary = "Deactivate additional service")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "204", description = "Additional service deactivated successfully"),
+                        @ApiResponse(responseCode = "404", description = "Additional service not found"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized")
+        })
+        @DeleteMapping("/{id}")
+        @ApiMessage("Deactivate additional service")
+        public ResponseEntity<Void> deactivateAdditionalService(@PathVariable("id") Long id) {
+                additionalServiceService.deleteAdditionalService(id);
+                logger.info(">>ADDITIONAL SERVICE CONTROLLER: Deactivated additional service with ID: {}", id);
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
 }

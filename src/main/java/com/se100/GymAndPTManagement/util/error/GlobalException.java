@@ -1,5 +1,7 @@
 package com.se100.GymAndPTManagement.util.error;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -109,16 +111,14 @@ public class GlobalException {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(restResponse);
     }
 
-    // @ExceptionHandler(value = StorageException.class)
-    // public ResponseEntity<RestResponse<Object>>
-    // handleFileUploadException(StorageException ex) {
-    // RestResponse<Object> restResponse = new RestResponse<>();
-    // restResponse.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-    // restResponse.setError("File upload exception occurs...");
-    // restResponse.setMessage(ex.getMessage());
-    // return
-    // ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(restResponse);
-    // }
+    @ExceptionHandler(value = StorageException.class)
+    public ResponseEntity<RestResponse<Object>> handleFileUploadException(StorageException ex) {
+        RestResponse<Object> restResponse = new RestResponse<>();
+        restResponse.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        restResponse.setError("File upload exception occurs...");
+        restResponse.setMessage(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(restResponse);
+    }
 
     @ExceptionHandler(value = AccessDeniedException.class)
     public ResponseEntity<RestResponse<Object>> handleAccessDeniedException(AccessDeniedException ex) {
@@ -172,4 +172,21 @@ public class GlobalException {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(restResponse);
     }
 
+    @ExceptionHandler(value = URISyntaxException.class)
+    public ResponseEntity<RestResponse<Object>> handleURISyntaxException(URISyntaxException ex) {
+        RestResponse<Object> restResponse = new RestResponse<>();
+        restResponse.setStatusCode(HttpStatus.BAD_REQUEST.value());
+        restResponse.setError("Invalid URI syntax");
+        restResponse.setMessage(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(restResponse);
+    }
+
+    @ExceptionHandler(value = IOException.class)
+    public ResponseEntity<RestResponse<Object>> handleIOException(IOException ex) {
+        RestResponse<Object> restResponse = new RestResponse<>();
+        restResponse.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        restResponse.setError("I/O Exception occurred");
+        restResponse.setMessage(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(restResponse);
+    }
 }

@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreatePTDTO;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdatePTDTO;
+import com.se100.GymAndPTManagement.domain.responseDTO.ResMemberDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResPTDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResUserDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
@@ -50,7 +51,8 @@ public class PersonalTrainerService {
     private final SlotRepository slotRepository;
 
     public PersonalTrainerService(PersonalTrainerRepository ptRepository, UserRepository userRepository,
-            RoleRepository roleRepository, PasswordEncoder passwordEncoder, AvailableSlotRepository availableSlotRepository,
+            RoleRepository roleRepository, PasswordEncoder passwordEncoder,
+            AvailableSlotRepository availableSlotRepository,
             SlotRepository slotRepository) {
         this.ptRepository = ptRepository;
         this.userRepository = userRepository;
@@ -98,6 +100,19 @@ public class PersonalTrainerService {
         pt.setStatus(PTStatusEnum.BUSY);
         PersonalTrainer updatedPT = ptRepository.save(pt);
         return convertToDTO(updatedPT);
+    }
+
+    /**
+     * Search PTs by name keyword (case-insensitive, partial match)
+     * 
+     * @param name Keyword to search in PT's fullname
+     * @return List of PTs matching the keyword
+     */
+    public List<ResPTDTO> searchPTsByName(String name) {
+        return ptRepository.findByUser_FullnameContainingIgnoreCase(name)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     /**
