@@ -61,6 +61,19 @@ public class MemberService {
     // =========================================
 
     /**
+     * Search members by name keyword (case-insensitive, partial match)
+     * 
+     * @param name Keyword to search in member's fullname
+     * @return List of members matching the keyword
+     */
+    public List<ResMemberDTO> searchMembersByName(String name) {
+        return memberRepository.findByUser_FullnameContainingIgnoreCase(name)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Create new member
      * 
      * @param request DTO containing member creation info

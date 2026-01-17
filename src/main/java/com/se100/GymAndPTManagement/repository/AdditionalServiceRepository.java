@@ -15,8 +15,7 @@ import com.se100.GymAndPTManagement.domain.table.AdditionalService;
  * Purpose: Repository for AdditionalService entity
  */
 @Repository
-public interface AdditionalServiceRepository
-        extends JpaRepository<AdditionalService, Long>, JpaSpecificationExecutor<AdditionalService> {
+public interface AdditionalServiceRepository extends JpaRepository<AdditionalService, Long> {
 
     /**
      * Find all active additional services
@@ -25,4 +24,12 @@ public interface AdditionalServiceRepository
      * @return List of active additional services
      */
     List<AdditionalService> findByIsActive(Boolean isActive);
+
+    /**
+     * Find additional services by name containing keyword (case-insensitive)
+     * 
+     * @param name Keyword to search in service name
+     * @return List of additional services matching the keyword
+     */
+    List<AdditionalService> findByNameContainingIgnoreCase(String name);
 }

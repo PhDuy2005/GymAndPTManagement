@@ -9,7 +9,7 @@
 
 ## 📊 Tổng Quan Công Việc
 
-### ✅ Đã Hoàn Thành (14/22)
+### ✅ Đã Hoàn Thành (15/22)
 - User
 - Role  
 - Permission
@@ -24,8 +24,9 @@
 - DailyDiet ✅
 - DietDetail ✅
 - WorkoutDevice ✅
+- Workout ✅
 
-### 🔨 Cần Implement (8/22)
+### 🔨 Cần Implement (7/22)
 
 ---
 
@@ -228,20 +229,43 @@
 #### 4. Workout Device Entity
 - [X] Entity class (`domain/table/WorkoutDevice.java`)
 - [X] Repository (`repository/WorkoutDeviceRepository.java`)
+  - [X] Method `findByNameContainingIgnoreCase(String name)` - Search by keyword
 - [X] Service layer (`service/WorkoutDeviceService.java`)
+  - [X] Method `searchWorkoutDevicesByName(String name)` - Returns List instead of single object
 - [X] DTOs (ReqCreateWorkoutDeviceDTO, ReqUpdateWorkoutDeviceDTO, ResWorkoutDeviceDTO)
 - [X] Controller (`controller/WorkoutDeviceController.java`)
+  - [X] Endpoint `GET /by-name?name={keyword}` - Search by name (contains, case-insensitive) → Returns `List<ResWorkoutDeviceDTO>`
 - [X] Maintenance schedule tracking
 - [X] Device type filtering
 - [X] Import date tracking
+- [X] **API Update**: Changed `/by-name` from exact match to keyword search (contains)
 
-#### 5. Workout Entity
-- [ ] Entity class (`domain/table/Workout.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
-- [ ] Exercise library management
+#### 5. Workout Entity (v2 - Redesigned)
+- [X] Entity class (`domain/table/Workout.java`)
+  - [X] Removed PT and Device relationships (simplified to exercise library)
+  - [X] Added `duration` (Integer, minutes)
+  - [X] Added `difficulty` (Enum: BEGINNER, INTERMEDIATE, ADVANCED)
+  - [X] Added `type` (String, category like Cardio/Strength/Flexibility)
+  - [X] Made `name` unique constraint
+- [X] Enum class (`util/enums/WorkoutDifficultyEnum.java`)
+- [X] Repository (`repository/WorkoutRepository.java`)
+  - [X] Removed PT/Device filtering methods
+  - [X] Added `findByDifficulty()`, `findByType()`, `findByTypeContainingIgnoreCase()`
+  - [X] Added `countByDifficulty()`, `countByType()`
+- [X] Service layer (`service/WorkoutService.java`)
+  - [X] Removed PT/Device repository dependencies
+  - [X] Simplified `createWorkout()` - only validates name uniqueness
+  - [X] Added difficulty/type filtering methods
+- [X] DTOs (ReqCreateWorkoutDTO, ReqUpdateWorkoutDTO, ResWorkoutDTO)
+  - [X] Removed `ptId`, `deviceId` fields
+  - [X] Added `duration`, `difficulty`, `type` fields
+- [X] Controller (`controller/WorkoutController.java`)
+  - [X] Removed 6 PT/Device endpoints (/by-pt, /by-device, /bodyweight, /general, /count-by-pt, /count-by-device)
+  - [X] Added 5 difficulty/type endpoints
+  - [X] Kept core CRUD endpoints (create, get by ID, search by name, update, delete)
+- [X] Exercise library management (generic exercises, not tied to PT or equipment)
+- [X] Search and filtering by difficulty/type
+- [X] **Documentation** (`.github/instruction/controller-example/WorkoutController.md`)
 
 ### ✅ CHECKPOINT 4 - Ngày 4
 #### 6. Workout Image Entity

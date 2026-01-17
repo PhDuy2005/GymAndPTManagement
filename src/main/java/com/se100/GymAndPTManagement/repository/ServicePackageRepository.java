@@ -28,4 +28,9 @@ public interface ServicePackageRepository
     List<ServicePackage> findByTypeAndIsActive(PackageTypeEnum type, Boolean isActive);
 
     boolean existsByPackageName(String packageName);
+
+    /**
+     * Find service packages by package name containing keyword (case-insensitive)
+     */
+    List<ServicePackage> findByPackageNameContainingIgnoreCase(String packageName);
 }

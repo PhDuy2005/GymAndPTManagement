@@ -100,15 +100,16 @@ public class WorkoutDeviceService {
     }
 
     /**
-     * Get workout device by name
+     * Search workout devices by name (contains keyword, case insensitive)
      */
-    public ResWorkoutDeviceDTO getWorkoutDeviceByName(String name) {
-        logger.info("Fetching workout device with name: " + name);
+    public List<ResWorkoutDeviceDTO> searchWorkoutDevicesByName(String name) {
+        logger.info("Searching workout devices with name containing: " + name);
 
-        WorkoutDevice device = workoutDeviceRepository.findByName(name)
-                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy thiết bị với tên: " + name));
+        List<WorkoutDevice> devices = workoutDeviceRepository.findByNameContainingIgnoreCase(name);
 
-        return convertToDTO(device);
+        return devices.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     /**

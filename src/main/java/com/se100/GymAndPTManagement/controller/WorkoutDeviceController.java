@@ -1,6 +1,7 @@
 package com.se100.GymAndPTManagement.controller;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -24,7 +25,6 @@ import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
 import com.se100.GymAndPTManagement.domain.table.WorkoutDevice;
 import com.se100.GymAndPTManagement.service.WorkoutDeviceService;
 import com.se100.GymAndPTManagement.util.annotation.ApiMessage;
-import com.turkraft.springfilter.boot.Filter;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -69,28 +69,14 @@ public class WorkoutDeviceController {
     }
 
     @GetMapping("/by-name")
-    @ApiMessage("Lấy thông tin thiết bị theo tên")
-    @Operation(summary = "Get workout device by name", description = "Retrieve workout device details by name")
+    @ApiMessage("Tìm kiếm thiết bị theo tên")
+    @Operation(summary = "Search workout devices by name", description = "Search workout devices by name containing the keyword (case insensitive)")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Workout device found"),
-            @ApiResponse(responseCode = "404", description = "Workout device not found")
+            @ApiResponse(responseCode = "200", description = "List of workout devices found")
     })
-    public ResponseEntity<ResWorkoutDeviceDTO> getWorkoutDeviceByName(@RequestParam("name") String name) {
-        ResWorkoutDeviceDTO device = workoutDeviceService.getWorkoutDeviceByName(name);
-        return ResponseEntity.ok(device);
-    }
-
-    @GetMapping("/fetch")
-    @ApiMessage("Lấy danh sách thiết bị với filter và pagination")
-    @Operation(summary = "Fetch workout devices with filter", description = "Get paginated list of workout devices with optional SpringFilter specification")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "List of workout devices retrieved successfully")
-    })
-    public ResponseEntity<ResultPaginationDTO> fetchWorkoutDevices(
-            @Filter Specification<WorkoutDevice> spec,
-            Pageable pageable) {
-        ResultPaginationDTO result = workoutDeviceService.handleFetchWorkoutDevices(spec, pageable);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<List<ResWorkoutDeviceDTO>> searchWorkoutDevicesByName(@RequestParam("name") String name) {
+        List<ResWorkoutDeviceDTO> devices = workoutDeviceService.searchWorkoutDevicesByName(name);
+        return ResponseEntity.ok(devices);
     }
 
     @GetMapping("/by-type")

@@ -1,5 +1,6 @@
 package com.se100.GymAndPTManagement.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,4 +22,12 @@ public interface MemberRepository extends JpaRepository<Member, Long>, JpaSpecif
     Optional<Member> findByCccd(String cccd);
 
     Optional<Member> findByUserId(Long userId);
+
+    /**
+     * Find members by user's fullname containing keyword (case-insensitive)
+     * 
+     * @param fullname Keyword to search in member's fullname
+     * @return List of members matching the keyword
+     */
+    List<Member> findByUser_FullnameContainingIgnoreCase(String fullname);
 }

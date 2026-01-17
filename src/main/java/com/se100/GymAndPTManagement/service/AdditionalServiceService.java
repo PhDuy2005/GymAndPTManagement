@@ -5,15 +5,11 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.se100.GymAndPTManagement.controller.AdditionalServiceController;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateAdditionalServiceDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResAdditionalServiceDTO;
-import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
 import com.se100.GymAndPTManagement.domain.table.AdditionalService;
 import com.se100.GymAndPTManagement.repository.AdditionalServiceRepository;
 import com.se100.GymAndPTManagement.util.error.IdInvalidException;
@@ -64,30 +60,16 @@ public class AdditionalServiceService {
     }
 
     /**
-     * Fetch additional services with pagination and filter
+     * Search additional services by name keyword (case-insensitive, partial match)
      * 
-     * @param specification Filter specification
-     * @param pageable      Pagination information
-     * @return Paginated result with meta data
+     * @param name Keyword to search in service name
+     * @return List of additional services matching the keyword
      */
-    public ResultPaginationDTO handleFetchAdditionalServices(Specification<AdditionalService> specification,
-            Pageable pageable) {
-        Page<AdditionalService> pageAdditionalServices = additionalServiceRepository.findAll(specification, pageable);
-        ResultPaginationDTO resultPaginationDTO = new ResultPaginationDTO();
-        ResultPaginationDTO.Meta meta = ResultPaginationDTO.Meta.builder()
-                .page(pageable.getPageNumber() + 1)
-                .pageSize(pageable.getPageSize())
-                .totalPages(pageAdditionalServices.getTotalPages())
-                .totalItems(pageAdditionalServices.getTotalElements())
-                .build();
-
-        resultPaginationDTO.setMeta(meta);
-        List<ResAdditionalServiceDTO> result = pageAdditionalServices.getContent()
+    public List<ResAdditionalServiceDTO> searchAdditionalServicesByName(String name) {
+        return additionalServiceRepository.findByNameContainingIgnoreCase(name)
                 .stream()
                 .map(ResAdditionalServiceDTO::fromEntity)
                 .collect(Collectors.toList());
-        resultPaginationDTO.setResult(result);
-        return resultPaginationDTO;
     }
 
     /**

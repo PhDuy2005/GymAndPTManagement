@@ -142,6 +142,17 @@ public class ServicePackageService {
     }
 
     /**
+     * Search service packages by name keyword (case-insensitive, partial match)
+     */
+    @Transactional(readOnly = true)
+    public List<ResServicePackageDTO> searchServicePackagesByName(String packageName) {
+        return servicePackageRepository.findByPackageNameContainingIgnoreCase(packageName)
+                .stream()
+                .map(ResServicePackageDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Update service package
      */
     @Transactional

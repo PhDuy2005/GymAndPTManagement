@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreatePTDTO;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdatePTDTO;
+import com.se100.GymAndPTManagement.domain.responseDTO.ResMemberDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResPTDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
 import com.se100.GymAndPTManagement.domain.table.PersonalTrainer;
@@ -196,6 +197,19 @@ public class PersonalTrainerController {
             @Parameter(description = "ID của slot", required = true, example = "1") @RequestParam("slotId") Long slotId,
             @Parameter(description = "Ngày cần kiểm tra (yyyy-MM-dd)", required = true, example = "2026-01-20") @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         List<ResPTDTO> pts = ptService.getAvailablePTsBySlotAndDate(slotId, date);
+        return ResponseEntity.ok(pts);
+    }
+
+    @Operation(summary = "Search members by name keyword")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    @GetMapping("/by-name")
+    @ApiMessage("Tìm kiếm PT theo tên")
+    public ResponseEntity<List<ResPTDTO>> searchMembersByName(
+            @RequestParam("name") String name) {
+        List<ResPTDTO> pts = ptService.searchPTsByName(name);
         return ResponseEntity.ok(pts);
     }
 }

@@ -1,11 +1,13 @@
 package com.se100.GymAndPTManagement.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import com.se100.GymAndPTManagement.domain.table.Member;
 import com.se100.GymAndPTManagement.domain.table.PersonalTrainer;
 
 /**
@@ -18,4 +20,12 @@ import com.se100.GymAndPTManagement.domain.table.PersonalTrainer;
 public interface PersonalTrainerRepository
         extends JpaRepository<PersonalTrainer, Long>, JpaSpecificationExecutor<PersonalTrainer> {
     Optional<PersonalTrainer> findByUserId(Long userId);
+
+    /**
+     * Find members by user's fullname containing keyword (case-insensitive)
+     * 
+     * @param fullname Keyword to search in member's fullname
+     * @return List of members matching the keyword
+     */
+    List<PersonalTrainer> findByUser_FullnameContainingIgnoreCase(String fullname);
 }

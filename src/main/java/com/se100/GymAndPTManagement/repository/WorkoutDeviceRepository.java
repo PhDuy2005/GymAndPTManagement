@@ -19,6 +19,9 @@ public interface WorkoutDeviceRepository
     // Find by name (exact match)
     Optional<WorkoutDevice> findByName(String name);
 
+    // Search by name (contains keyword, case insensitive)
+    List<WorkoutDevice> findByNameContainingIgnoreCase(String name);
+
     // Check if device exists by name
     boolean existsByName(String name);
 
