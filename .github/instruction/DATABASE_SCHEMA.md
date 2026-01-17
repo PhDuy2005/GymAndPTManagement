@@ -1267,9 +1267,6 @@ public class Invoice {
     @Column(name = "payment_status", length = 50)
     private String paymentStatus;
 
-    @Column(name = "status", length = 50)
-    private String status;
-
     // Audit fields (bắt buộc)
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -1578,6 +1575,9 @@ public class DietDetail {
     @JoinColumn(name = "food_id", insertable = false, updatable = false)
     private Food food;
 
+    @Column(name = "diet_name", length = 255)
+    private String dietName;
+
     @Column(name = "prep_method", length = 255)
     private String prepMethod;
 
@@ -1626,6 +1626,7 @@ public class DietDetailId implements Serializable {
 **Columns**:
 - `diet_id`: BIGINT, Primary Key, Foreign Key -> daily_diets(diet_id)
 - `food_id`: BIGINT, Primary Key, Foreign Key -> foods(food_id)
+- `diet_name`: VARCHAR(255), Not Null
 - `prep_method`: VARCHAR(255), Nullable
 - `amount`: DECIMAL(8,2), Nullable
 - `note`: TEXT, Nullable
