@@ -44,6 +44,91 @@
 
 <!-- New logs will be added below this line -->
 
+## [2026-01-11 20:28:23] - Add Pagination and Specification Support to All Controllers
+- **Model**: GitHub Copilot (Claude Sonnet 4.5)
+- **User**: PhDuy2005
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/domain/responseDTO/ResultPaginationDTO.java`
+  - `src/main/java/com/se100/GymAndPTManagement/repository/AdditionalServiceRepository.java`
+  - `src/main/java/com/se100/GymAndPTManagement/repository/MemberRepository.java`
+  - `src/main/java/com/se100/GymAndPTManagement/repository/PersonalTrainerRepository.java`
+  - `src/main/java/com/se100/GymAndPTManagement/repository/ServicePackageRepository.java`
+  - `src/main/java/com/se100/GymAndPTManagement/service/AdditionalServiceService.java`
+  - `src/main/java/com/se100/GymAndPTManagement/service/MemberService.java`
+  - `src/main/java/com/se100/GymAndPTManagement/service/PersonalTrainerService.java`
+  - `src/main/java/com/se100/GymAndPTManagement/service/ServicePackageService.java`
+  - `src/main/java/com/se100/GymAndPTManagement/controller/AdditionalServiceController.java`
+  - `src/main/java/com/se100/GymAndPTManagement/controller/MemberController.java`
+  - `src/main/java/com/se100/GymAndPTManagement/controller/PersonalTrainerController.java`
+  - `src/main/java/com/se100/GymAndPTManagement/controller/ServicePackageController.java`
+- **Description**: Thêm hỗ trợ pagination và specification filtering cho tất cả controllers. Tạo ResultPaginationDTO với Meta class (page, pageSize, totalPages, totalItems). Cập nhật tất cả Repository để extends JpaSpecificationExecutor. Thêm method handleFetch{Entity} vào tất cả Service với Specification và Pageable parameters. Thêm endpoint GET /fetch vào tất cả Controller (AdditionalServiceController, MemberController, PersonalTrainerController, ServicePackageController) với @Filter annotation và Pageable support. Logging đầy đủ cho các fetch endpoints.
+
+---
+
+## [2026-01-11 20:16:00] - Update AdditionalServiceController Documentation
+- **Model**: GitHub Copilot (Claude Sonnet 4.5)
+- **User**: PhDuy2005
+- **Files Modified/Created**:
+  - `.github/instruction/controller-example/AdditionalServiceController.md`
+- **Description**: Cập nhật documentation cho AdditionalServiceController với tất cả 6 endpoints hiện có: POST (Create), GET (Get All), GET by ID, GET /active, PUT /activate, DELETE (Deactivate). Thêm thông tin chi tiết về isActive field, soft delete mechanism, business rules cho active/inactive status. Cập nhật logging examples, error responses, và notes về việc không có UPDATE endpoint. Version 1.1.
+
+---
+
+## [2026-01-11 19:57:06] - Implement GET ALL, GET by ID, GET active, PUT activate APIs for AdditionalService
+- **Model**: GitHub Copilot (Claude Sonnet 4.5)
+- **User**: PhDuy2005
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/domain/table/AdditionalService.java`
+  - `src/main/java/com/se100/GymAndPTManagement/repository/AdditionalServiceRepository.java`
+  - `src/main/java/com/se100/GymAndPTManagement/service/AdditionalServiceService.java`
+  - `src/main/java/com/se100/GymAndPTManagement/controller/AdditionalServiceController.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/responseDTO/ResAdditionalServiceDTO.java`
+- **Description**: Thêm field isActive vào AdditionalService entity với default value true trong @PrePersist. Thêm custom query findByIsActive vào Repository. Implement 4 methods trong Service: getAllAdditionalServices, getAdditionalServiceById (với exception handling), getAllActiveAdditionalServices, activateAdditionalService. Implement 4 GET/PUT endpoints trong Controller với logging đầy đủ và @ApiMessage. Cập nhật ResAdditionalServiceDTO để include isActive field.
+
+---
+
+## [2026-01-11 19:51:58] - Implement POST API for AdditionalService
+- **Model**: GitHub Copilot (Claude Sonnet 4.5)
+- **User**: PhDuy2005
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/domain/requestDTO/ReqCreateAdditionalServiceDTO.java`
+  - `src/main/java/com/se100/GymAndPTManagement/domain/responseDTO/ResAdditionalServiceDTO.java`
+  - `src/main/java/com/se100/GymAndPTManagement/service/AdditionalServiceService.java`
+  - `src/main/java/com/se100/GymAndPTManagement/controller/AdditionalServiceController.java`
+- **Description**: Implement POST API để tạo additional service mới. Tạo ReqCreateAdditionalServiceDTO với validation (name required, costPrice và suggestSellPrice >= 0), ResAdditionalServiceDTO với static method fromEntity. Implement createAdditionalService trong Service với builder pattern. Implement POST endpoint trong Controller với @Valid, @ApiMessage, logging INFO khi tạo thành công, và return HTTP 201 Created.
+
+---
+
+## [2026-01-11 19:48:37] - Create AdditionalService Controller, Service, Repository & Documentation
+- **Model**: GitHub Copilot (Claude Sonnet 4.5)
+- **User**: PhDuy2005
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/repository/AdditionalServiceRepository.java`
+  - `src/main/java/com/se100/GymAndPTManagement/service/AdditionalServiceService.java`
+  - `src/main/java/com/se100/GymAndPTManagement/controller/AdditionalServiceController.java`
+  - `.github/instruction/controller-example/AdditionalServiceController.md`
+- **Description**: Tạo structure cho Controller-Service-Repository của AdditionalService với Dependency Injection. Controller có khai báo SLF4J Logger theo quy tắc mới. Tạo file documentation đầy đủ cho Controller bao gồm 6 endpoints: Create, Get All, Get by ID, Update, Delete, Search by Name với request/response examples, business rules, exceptions, và logging format.
+
+---
+
+## [2026-01-11 19:47:34] - Update INSTRUCTION.md - Add Controller Logging Requirements
+- **Model**: GitHub Copilot (Claude Sonnet 4.5)
+- **User**: PhDuy2005
+- **Files Modified/Created**:
+  - `.github/instruction/INSTRUCTION.md`
+- **Description**: Bổ sung yêu cầu BẮT BUỘC về logging trong Controller vào INSTRUCTION.md. Thêm section "Logging trong Controller" với quy tắc sử dụng SLF4J Logger, format log message chuẩn (prefix >>CONTROLLER_NAME), và các ví dụ cho INFO log (request/response) và ERROR log (exception). Tham khảo implementation từ ServicePackageController.java.
+
+---
+
+## [2026-01-11 19:45:20] - Create and Fix AdditionalService Entity
+- **Model**: GitHub Copilot (Claude Sonnet 4.5)
+- **User**: PhDuy2005
+- **Files Modified/Created**:
+  - `src/main/java/com/se100/GymAndPTManagement/domain/table/AdditionalService.java`
+- **Description**: Tạo entity AdditionalService theo đúng schema trong DATABASE_SCHEMA.md với các fields: additional_service_id (PK), name, costPrice, suggestSellPrice và audit fields (created_at, updated_at, created_by, updated_by). Thêm metadata header comment theo chuẩn INSTRUCTION.md.
+
+---
+
 ## [2026-01-08 11:20:37] - Create PersonalTrainer Repository, Service, Controller & DTOs
 - **Model**: GitHub Copilot (Claude Sonnet 4.5)
 - **User**: PhDuy2005

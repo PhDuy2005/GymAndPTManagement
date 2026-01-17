@@ -9,12 +9,19 @@
 
 ## 📊 Tổng Quan Công Việc
 
-### ✅ Đã Hoàn Thành (3/22)
+### ✅ Đã Hoàn Thành (10/22)
 - User
 - Role  
 - Permission
+- Member
+- PersonalTrainer
+- ServicePackage
+- AdditionalService
+- Slot
+- AvailableSlot
+- BodyMetrics
 
-### 🔨 Cần Implement (19/22)
+### 🔨 Cần Implement (12/22)
 
 ---
 
@@ -59,47 +66,54 @@
 
 ### ✅ CHECKPOINT 2 - Ngày 2
 #### 3. Service Package Entity
-- [~] Entity class (`domain/table/ServicePackage.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
-- [ ] Business logic: activate/deactivate packages
+- [X] Entity class (`domain/table/ServicePackage.java`)
+- [X] Repository
+- [X] Service layer
+- [X] DTOs
+- [X] Controller
+- [X] Business logic: activate/deactivate packages
 
 #### 4. Additional Service Entity
-- [ ] Entity class (`domain/table/AdditionalService.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
-- [ ] Price management logic
+- [X] Entity class (`domain/table/AdditionalService.java`)
+- [X] Repository (`repository/AdditionalServiceRepository.java`)
+- [X] Service layer (`service/AdditionalServiceService.java`)
+- [X] DTOs (ReqCreateAdditionalServiceDTO, ResAdditionalServiceDTO)
+- [X] Controller (`controller/AdditionalServiceController.java`)
+- [X] Price management logic
+- [X] Pagination & Specification support
+- [X] OpenAPI documentation (@Operation, @ApiResponses)
 
 ### ✅ CHECKPOINT 3 - Ngày 3
 #### 5. Slot Entity
-- [ ] Entity class (`domain/table/Slot.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
-- [ ] Time validation logic
+- [X] Entity class (`domain/table/Slot.java`)
+- [X] Repository (`repository/SlotRepository.java`)
+- [X] Service layer (`service/SlotService.java`)
+- [X] DTOs (ReqCreateSlotDTO, ReqUpdateSlotDTO, ResSlotDTO)
+- [X] Controller (`controller/SlotController.java`)
+- [X] Time validation logic (startTime < endTime)
+- [X] Pagination & Specification support
+- [X] Active/Inactive management
+- [X] OpenAPI documentation (@Operation, @ApiResponses)
 
 #### 6. Available Slot Entity
-- [ ] Entity class (`domain/table/AvailableSlot.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
-- [ ] PT schedule management
+- [X] Entity class (`domain/table/AvailableSlot.java`)
+- [X] Repository
+- [X] Service layer
+- [X] DTOs
+- [X] Controller
+- [X] PT schedule management
 
 ### ✅ CHECKPOINT 4 - Ngày 4
 #### 7. Body Metrics Entity
-- [ ] Entity class (`domain/table/BodyMetrics.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
-- [ ] BMI calculation logic
-- [ ] Progress tracking features
+- [X] Entity class (`domain/table/BodyMetrics.java`)
+- [X] Repository (`repository/BodyMetricsRepository.java`)
+- [X] Service layer (`service/BodyMetricsService.java`)
+- [X] DTOs (ReqCreateBodyMetricsDTO, ReqUpdateBodyMetricsDTO, ResBodyMetricsDTO)
+- [X] Controller (`controller/BodyMetricsController.java`)
+- [X] BMI calculation logic (auto-calculated in entity)
+- [X] Pagination & Specification support
+- [X] OpenAPI documentation (@Operation, @ApiResponses)
+- [X] Member metrics tracking (findByMemberIdOrderByMeasuredDateDesc)
 
 ### ✅ CHECKPOINT 5 - Ngày 5 (Testing & Integration)
 - [ ] Test tất cả APIs
