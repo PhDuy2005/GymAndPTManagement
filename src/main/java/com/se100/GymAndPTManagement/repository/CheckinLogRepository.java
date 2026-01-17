@@ -34,25 +34,25 @@ public interface CheckinLogRepository extends JpaRepository<CheckinLog, Long> {
     /**
      * Find active checkin log (CHECKED_IN status) by booking ID
      * Used for checkout validation - checks if booking has active checkin
+     * Note: Using fetchFirst() in query instead of LIMIT for JPQL compatibility
      */
     @Query("""
         SELECT cl FROM CheckinLog cl
         WHERE cl.booking.id = :bookingId
         AND cl.status = 'CHECKED_IN'
         ORDER BY cl.createdAt DESC
-        LIMIT 1
     """)
     Optional<CheckinLog> findActiveCheckInByBookingId(@Param("bookingId") Long bookingId);
 
     /**
      * Find latest checkin log by booking ID (regardless of status)
      * Used for cancel checkin operation
+     * Note: Using ORDER BY DESC instead of LIMIT for JPQL compatibility
      */
     @Query("""
         SELECT cl FROM CheckinLog cl
         WHERE cl.booking.id = :bookingId
         ORDER BY cl.createdAt DESC
-        LIMIT 1
     """)
     Optional<CheckinLog> findLatestByBookingId(@Param("bookingId") Long bookingId);
 

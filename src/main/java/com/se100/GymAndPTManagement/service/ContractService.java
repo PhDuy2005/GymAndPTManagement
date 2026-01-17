@@ -299,11 +299,28 @@ public class ContractService {
     /**
      * Map Contract entity to ResContractDTO
      * Extracts all related data from Contract object and its relationships
+     * Includes null safety checks for all relationships
      */
     private ResContractDTO mapToResDTO(Contract contract) {
+        // Validate required relationships exist
+        if (contract.getMember() == null || contract.getMember().getUser() == null) {
+            throw new IllegalStateException("Contract member or member user is null");
+        }
+        if (contract.getServicePackage() == null) {
+            throw new IllegalStateException("Contract service package is null");
+        }
+        
         Member member = contract.getMember();
         ServicePackage servicePackage = contract.getServicePackage();
         PersonalTrainer personalTrainer = contract.getMainPt();
+        
+        // Safely get PT name - handle null PT and null PT user
+        String ptName = null;
+        Long ptId = null;
+        if (personalTrainer != null && personalTrainer.getUser() != null) {
+            ptId = personalTrainer.getId();
+            ptName = personalTrainer.getUser().getFullname();
+        }
         
         return ResContractDTO.builder()
                 .id(contract.getId())
@@ -312,8 +329,8 @@ public class ContractService {
                 .packageId(servicePackage.getId())
                 .packageName(servicePackage.getPackageName())
                 .packagePrice(servicePackage.getPrice())
-                .ptId(personalTrainer != null ? personalTrainer.getId() : null)
-                .ptName(personalTrainer != null ? personalTrainer.getUser().getFullname() : null)
+                .ptId(ptId)
+                .ptName(ptName)
                 .startDate(contract.getStartDate())
                 .endDate(contract.getEndDate())
                 .totalSessions(contract.getTotalSessions())

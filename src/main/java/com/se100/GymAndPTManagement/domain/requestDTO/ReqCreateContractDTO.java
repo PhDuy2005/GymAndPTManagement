@@ -8,6 +8,7 @@ package com.se100.GymAndPTManagement.domain.requestDTO;
 
 import jakarta.validation.constraints.*;
 import java.time.LocalDate;
+import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

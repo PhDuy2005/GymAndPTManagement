@@ -111,6 +111,22 @@ public class ContractController {
     // Mapper
     // =========================================
     private ResContractDTO mapContractToDTO(Contract contract) {
+        // Validate required relationships exist
+        if (contract.getMember() == null || contract.getMember().getUser() == null) {
+            throw new IllegalStateException("Contract member or member user is null");
+        }
+        if (contract.getServicePackage() == null) {
+            throw new IllegalStateException("Contract service package is null");
+        }
+        
+        // Safely get PT name - handle null PT and null PT user
+        String ptName = null;
+        Long ptId = null;
+        if (contract.getMainPt() != null && contract.getMainPt().getUser() != null) {
+            ptId = contract.getMainPt().getId();
+            ptName = contract.getMainPt().getUser().getFullname();
+        }
+        
         return ResContractDTO.builder()
                 .id(contract.getId())
                 .memberId(contract.getMember().getId())
@@ -118,13 +134,13 @@ public class ContractController {
                 .packageId(contract.getServicePackage().getId())
                 .packageName(contract.getServicePackage().getPackageName())
                 .packagePrice(contract.getServicePackage().getPrice())
-                .ptId(contract.getMainPt() != null ? contract.getMainPt().getId() : null)
-                .ptName(contract.getMainPt() != null ? contract.getMainPt().getUser().getFullname() : null)
+                .ptId(ptId)
+                .ptName(ptName)
                 .startDate(contract.getStartDate())
                 .endDate(contract.getEndDate())
                 .totalSessions(contract.getTotalSessions())
                 .remainingSessions(contract.getRemainingSessions())
-                .status(contract.getStatus())
+                .status(contract.getStatus().name())
                 .notes(contract.getNotes())
                 .signedAt(contract.getSignedAt())
                 .createdAt(contract.getCreatedAt())

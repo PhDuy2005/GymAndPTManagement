@@ -113,59 +113,59 @@
 
 ### ✅ CHECKPOINT 1 - Ngày 1
 #### 1. Contract Entity (Ưu tiên cao)
-- [ ] Entity class (`domain/table/Contract.java`)
-- [ ] Repository (`repository/ContractRepository.java`)
-- [ ] Service class
-- [ ] Request/Response DTOs
-- [ ] REST Controller
-- [ ] Contract status management (ACTIVE, EXPIRED, CANCELLED)
-- [ ] Date validation (start_date < end_date)
+- [X] Entity class (`domain/table/Contract.java`)
+- [X] Repository (`repository/ContractRepository.java`)
+- [X] Service class
+- [X] Request/Response DTOs
+- [X] REST Controller
+- [X] Contract status management (ACTIVE, EXPIRED, CANCELLED)
+- [X] Date validation (start_date < end_date)
 
 ### ✅ CHECKPOINT 2 - Ngày 2
 #### 2. Booking Entity
-- [ ] Entity class (`domain/table/Booking.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
-- [ ] Booking validation (slot availability, contract validity)
-- [ ] Conflict detection
+- [X] Entity class (`domain/table/Booking.java`)
+- [X] Repository
+- [X] Service layer
+- [X] DTOs
+- [X] Controller
+- [X] Booking validation (slot availability, contract validity)
+- [X] Conflict detection
 
 ### ✅ CHECKPOINT 3 - Ngày 3
 #### 3. Checkin Log Entity
-- [ ] Entity class (`domain/table/CheckinLog.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
+- [X] Entity class (`domain/table/CheckinLog.java`)
+- [X] Repository
+- [X] Service layer
+- [X] DTOs
+- [X] Controller
 - [ ] Auto-calculate duration
-- [ ] Attendance tracking
+- [X] Attendance tracking
 
 ### ✅ CHECKPOINT 4 - Ngày 4 (Billing)
 #### 4. Invoice Entity
-- [ ] Entity class (`domain/table/Invoice.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
+- [X] Entity class (`domain/table/Invoice.java`)
+- [X] Repository
+- [X] Service layer
+- [X] DTOs
+- [X] Controller
 - [ ] Payment status management
-- [ ] Auto-calculate final_amount
+- [X] Auto-calculate final_amount
 
 #### 5. Invoice Detail Entity
-- [ ] Entity class (`domain/table/InvoiceDetail.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
-- [ ] Auto-calculate total_amount (quantity × unit_price)
-- [ ] Link to ServicePackage OR AdditionalService
+- [X] Entity class (`domain/table/InvoiceDetail.java`)
+- [X] Repository
+- [X] Service layer
+- [X] DTOs
+- [X] Controller
+- [X] Auto-calculate total_amount (quantity × unit_price)
+- [X] Link to ServicePackage OR AdditionalService
 
 ### ✅ CHECKPOINT 5 - Ngày 5 (Testing & Integration)
-- [ ] Integration testing cho booking flow
-- [ ] Testing payment flow
-- [ ] End-to-end testing
-- [ ] API documentation
-- [ ] Bug fixes
+- [X] Integration testing cho booking flow
+- [X] Testing payment flow
+- [X] End-to-end testing
+- [X] API documentation
+- [X] Bug fixes
 
 ---
 

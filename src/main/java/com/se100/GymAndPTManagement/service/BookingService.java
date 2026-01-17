@@ -53,9 +53,7 @@ public class BookingService {
         // Map to response DTOs
         return availableSlots.stream()
                 .map(slot -> ResAvailableSlotDTO.builder()
-                        .slotId(slot.getId())
-                        .startTime(slot.getStartTime())
-                        .endTime(slot.getEndTime())
+                        .id(slot.getId())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -75,14 +73,20 @@ public class BookingService {
         // Query available PTs from repository
         List<PersonalTrainer> availablePTs = bookingRepository.getAvailablePTsForSlot(slotId, dayOfWeek, date);
 
-        // Map to response DTOs
+        // Map to response DTOs with null safety
         return availablePTs.stream()
-                .map(pt -> ResAvailablePTDTO.builder()
-                        .ptId(pt.getId())
-                        .ptName(pt.getUser().getFullname())
-                        .specialization(pt.getSpecialization())
-                        .experienceYears(pt.getExperienceYears())
-                        .build())
+                .map(pt -> {
+                    // Validate PT relationships
+                    if (pt == null || pt.getUser() == null) {
+                        throw new IllegalStateException("PersonalTrainer or PT user is null");
+                    }
+                    return ResAvailablePTDTO.builder()
+                            .ptId(pt.getId())
+                            .ptName(pt.getUser().getFullname())
+                            .specialization(pt.getSpecialization())
+                            .experienceYears(pt.getExperienceYears())
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 
@@ -242,9 +246,13 @@ public class BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
         
-        // Step 2: Validate PT exists
+        // Step 2: Validate new PT exists and has valid user relationship
         PersonalTrainer newPt = personalTrainerRepository.findById(newPtId)
                 .orElseThrow(() -> new IllegalArgumentException("Personal trainer không tồn tại"));
+        
+        if (newPt.getUser() == null) {
+            throw new IllegalStateException("PersonalTrainer user is null for PT ID: " + newPtId);
+        }
         
         // Step 3: Update PT
         booking.setRealPt(newPt);
@@ -272,8 +280,13 @@ public class BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
 
-        // Get the contract and restore remaining sessions
+        // Validate contract exists
         Contract contract = booking.getContract();
+        if (contract == null) {
+            throw new IllegalStateException("Booking contract is null for booking ID: " + bookingId);
+        }
+        
+        // Get the contract and restore remaining sessions
         if (contract.getRemainingSessions() != null && contract.getRemainingSessions() < contract.getTotalSessions()) {
             contract.setRemainingSessions(contract.getRemainingSessions() + 1);
             contractRepository.save(contract);
@@ -285,15 +298,35 @@ public class BookingService {
 
     /**
      * Map Booking entity to response DTO
+     * Includes null safety checks for all required relationships
      */
     private ResBookingDTO mapToResponseDTO(Booking booking) {
+        // Validate required relationships
+        if (booking.getContract() == null) {
+            throw new IllegalStateException("Booking contract is null");
+        }
+        if (booking.getMember() == null || booking.getMember().getUser() == null) {
+            throw new IllegalStateException("Booking member or member user is null");
+        }
+        if (booking.getSlot() == null) {
+            throw new IllegalStateException("Booking slot is null");
+        }
+        
+        // Safely get PT info - PT is optional
+        Long ptId = null;
+        String ptName = null;
+        if (booking.getRealPt() != null && booking.getRealPt().getUser() != null) {
+            ptId = booking.getRealPt().getId();
+            ptName = booking.getRealPt().getUser().getFullname();
+        }
+        
         return ResBookingDTO.builder()
                 .id(booking.getId())
                 .contractId(booking.getContract().getId())
                 .memberId(booking.getMember().getId())
                 .memberName(booking.getMember().getUser().getFullname())
-                .ptId(booking.getRealPt() != null ? booking.getRealPt().getId() : null)
-                .ptName(booking.getRealPt() != null ? booking.getRealPt().getUser().getFullname() : null)
+                .ptId(ptId)
+                .ptName(ptName)
                 .slotId(booking.getSlot().getId())
                 .slotStartTime(booking.getSlot().getStartTime())
                 .slotEndTime(booking.getSlot().getEndTime())

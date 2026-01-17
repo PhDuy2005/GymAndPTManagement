@@ -217,6 +217,11 @@ public class InvoiceService {
             return null;
         }
         
+        // Validate required relationships
+        if (invoiceDetail.getInvoice() == null) {
+            throw new IllegalStateException("InvoiceDetail invoice is null");
+        }
+        
         String servicePackageName = null;
         Long servicePackageId = null;
         if (invoiceDetail.getServicePackage() != null) {
@@ -253,15 +258,15 @@ public class InvoiceService {
             return null;
         }
         
-        String memberName = null;
-        if (invoice.getMember() != null && invoice.getMember().getUser() != null) {
-            memberName = invoice.getMember().getUser().getFullname();
+        // Validate required relationships
+        if (invoice.getMember() == null || invoice.getMember().getUser() == null) {
+            throw new IllegalStateException("Invoice member or member user is null");
         }
         
         return ResInvoiceDTO.builder()
             .invoiceId(invoice.getId())
             .memberId(invoice.getMember().getId())
-            .memberName(memberName)
+            .memberName(invoice.getMember().getUser().getFullname())
             .totalAmount(invoice.getTotalAmount())
             .discountAmount(invoice.getDiscountAmount())
             .finalAmount(invoice.getFinalAmount())

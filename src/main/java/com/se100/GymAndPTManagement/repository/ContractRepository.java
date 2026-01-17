@@ -50,7 +50,6 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
         AND c.status = :status
         AND c.startDate <= :bookingDate
         AND c.endDate >= :bookingDate
-        LIMIT 1
     """)
     Optional<Contract> findByMemberIdAndStatusAndDateRange(
         @Param("memberId") Long memberId,

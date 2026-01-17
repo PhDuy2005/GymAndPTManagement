@@ -53,7 +53,8 @@ public class CheckinLogService {
                 .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
 
         // Step 2: Check if booking already has active checkin
-        if (checkinLogRepository.hasActiveCheckin(dto.getBookingId())) {
+        var activeCheckin = checkinLogRepository.findActiveCheckInByBookingId(dto.getBookingId());
+        if (activeCheckin.isPresent()) {
             throw new IllegalArgumentException("Booking này đã được check-in rồi");
         }
 
@@ -204,6 +205,11 @@ public class CheckinLogService {
         
         // Get the most recent contract (assuming contracts are ordered by creation)
         Contract latestContract = memberContracts.get(memberContracts.size() - 1);
+        
+        // Validate contract has member relationship loaded
+        if (latestContract.getMember() == null || latestContract.getMember().getUser() == null) {
+            throw new IllegalArgumentException("Không thể tải thông tin thành viên từ hợp đồng");
+        }
         
         // Step 2: Extract session counts from contract
         Integer totalSessions = latestContract.getTotalSessions() != null ? latestContract.getTotalSessions() : 0;
