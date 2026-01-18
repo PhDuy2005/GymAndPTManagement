@@ -43,6 +43,17 @@ public class WorkoutDeviceController {
         this.workoutDeviceService = workoutDeviceService;
     }
 
+    @GetMapping
+    @ApiMessage("Lấy danh sách tất cả thiết bị")
+    @Operation(summary = "Get all workout devices", description = "Retrieve all workout devices with pagination")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "List of workout devices retrieved successfully")
+    })
+    public ResponseEntity<ResultPaginationDTO> getAllWorkoutDevices(Pageable pageable) {
+        ResultPaginationDTO result = workoutDeviceService.handleFetchWorkoutDevices(null, pageable);
+        return ResponseEntity.ok(result);
+    }
+
     @PostMapping
     @ApiMessage("Tạo thiết bị tập luyện mới")
     @Operation(summary = "Create new workout device", description = "Create a new workout device/equipment in the gym")

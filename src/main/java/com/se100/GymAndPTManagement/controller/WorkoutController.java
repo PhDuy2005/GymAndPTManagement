@@ -38,6 +38,17 @@ public class WorkoutController {
         this.workoutService = workoutService;
     }
 
+    @GetMapping
+    @ApiMessage("Lấy danh sách tất cả bài tập")
+    @Operation(summary = "Get all workouts", description = "Retrieve all workouts with pagination")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "List of workouts retrieved successfully")
+    })
+    public ResponseEntity<ResultPaginationDTO> getAllWorkouts(Pageable pageable) {
+        ResultPaginationDTO result = workoutService.handleFetchWorkouts(null, pageable);
+        return ResponseEntity.ok(result);
+    }
+
     @PostMapping
     @ApiMessage("Tạo bài tập mới")
     @Operation(summary = "Create new workout", description = "Create a new workout exercise in the library")
