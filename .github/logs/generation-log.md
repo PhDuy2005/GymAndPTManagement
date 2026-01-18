@@ -788,3 +788,128 @@ Tất cả endpoints return `ResponseEntity<RestResponse<T>>`, có @ApiMessage a
 7. GET /api/v1/bookings/{bookingId} - Get by ID
 8. DELETE /api/v1/bookings/{bookingId} - Delete booking
 
+---
+
+## [2026-01-16 10:00:00] - Implement Integration Testing Infrastructure và BookingServiceIntegrationTest
+- **Model**: GitHub Copilot (Claude Haiku 4.5)
+- **User**: KStuv
+- **Files Created**:
+  - `src/test/java/com/se100/GymAndPTManagement/integration/BookingIntegrationTestBase.java`
+  - `src/test/resources/application-test.properties`
+  - `src/test/java/com/se100/GymAndPTManagement/integration/testdata/TestDataBuilders.java`
+  - `src/test/java/com/se100/GymAndPTManagement/integration/service/BookingServiceIntegrationTest.java`
+- **Description**: 
+
+**Phần 1: Test Infrastructure Setup**
+
+Tạo `BookingIntegrationTestBase.java` - Base class cho tất cả booking integration tests:
+- Annotation: `@SpringBootTest`, `@AutoConfigureMockMvc`, `@ActiveProfiles("test")`, `@Transactional`
+- Cung cấp MockMvc, ObjectMapper, và tất cả repository/service injections
+- Auto-rollback transaction sau mỗi test để cách ly test data
+- Helper methods: `clearAllData()`, `countAllBookings()`, `countAllContracts()`, `countAllMembers()`
+- Setup/teardown: `@BeforeEach` (clear data), `@AfterEach` (transaction cleanup)
+
+Tạo `application-test.properties` - Cấu hình H2 in-memory database:
+- Database: H2 in-memory (`:mem:testdb`)
+- JPA: `ddl-auto=create-drop` (recreate schema mỗi test)
+- Logging: WARN by default, INFO cho application code, DEBUG cho web requests
+- Security: Test user credentials cho testing
+
+**Phần 2: Test Data Builders**
+
+Tạo `TestDataBuilders.java` - Fluent API builders để tạo test data:
+- `UserTestBuilder`: Build User entities với default test values (email, password, fullname, etc.)
+- `MemberTestBuilder`: Build Member entities (cccd, user link)
+- `PersonalTrainerTestBuilder`: Build PT entities (specialization, experience, status)
+- `ServicePackageTestBuilder`: Build service packages (name, sessions, duration, price)
+- `ContractTestBuilder`: Build contract entities (member, PT, package, dates, status, sessions)
+- `SlotTestBuilder`: Build time slots (start/end times)
+- `AvailableSlotTestBuilder`: Build available slots (PT, slot, day of week)
+- `BookingTestBuilder`: Build booking entities (contract, member, PT, slot, date)
+- `CheckinLogTestBuilder`: Build checkin logs (booking, member, times, status)
+
+Mỗi builder sử dụng fluent method chaining pattern và cung cấp sensible defaults.
+
+**Phần 3: BookingServiceIntegrationTest (14 Test Cases)**
+
+Tạo `BookingServiceIntegrationTest.java` - Comprehensive service layer integration tests:
+
+1. **Test 1: Create Booking - Happy Path**
+   - Kiểm tra tạo booking thành công với tất cả dữ liệu valid
+   - Xác nhận session được giảm từ contract
+
+2. **Test 2: Create Booking - Member Không Tồn Tại**
+   - Validate IllegalArgumentException khi member không tồn tại
+
+3. **Test 3: Create Booking - Không Có Active Contract**
+   - Validate IllegalArgumentException khi member không có active contract
+
+4. **Test 4: Create Booking - Contract Đã Hết Hạn**
+   - Validate IllegalArgumentException khi contract end_date đã qua
+
+5. **Test 5: Create Booking - Không Còn Session**
+   - Validate IllegalArgumentException khi remaining_sessions = 0
+
+6. **Test 6: Create Booking - PT Không Tồn Tại**
+   - Validate IllegalArgumentException khi PT không tồn tại
+
+7. **Test 7: Create Booking - Slot Không Tồn Tại**
+   - Validate IllegalArgumentException khi slot không tồn tại
+
+8. **Test 8: Create Booking - Booking Trùng Lặp**
+   - Validate IllegalArgumentException khi same PT-slot-date đã được đặt
+   - Test duplicate detection logic
+
+9. **Test 9: Get Booking by ID**
+   - Kiểm tra lấy single booking thành công với tất cả fields
+
+10. **Test 10: Get Booking by ID - Không Tìm Thấy**
+    - Validate IllegalArgumentException khi booking không tồn tại
+
+11. **Test 11: Get All Bookings for Member**
+    - Tạo 3 bookings cho same member, verify tất cả được return
+    - Confirm filter by member ID works correctly
+
+12. **Test 12: Get All Bookings for PT**
+    - Tạo 2 bookings cho same PT, verify tất cả được return
+    - Confirm filter by PT ID works correctly
+
+13. **Test 13: Delete Booking - Restore Sessions**
+    - Kiểm tra booking bị xóa khỏi database
+    - Confirm remaining_sessions được restore (+1) trên contract
+
+14. **Test 14: Update Booking PT**
+    - Test update PT trên existing booking
+    - Kiểm tra realPt field được update correctly
+
+**Test Coverage**:
+- Happy path: 1 test (create booking thành công)
+- Validation scenarios: 7 tests (entity không tồn tại, contract issues, duplicate)
+- Query operations: 3 tests (get by ID, get by member, get by PT)
+- Mutation operations: 3 tests (delete, update, create)
+- Total: 14 integration test cases
+
+**Test Data Strategy**:
+- Mỗi test tạo independent entity graph (không shared state giữa tests)
+- Sử dụng builder pattern để tạo readable, maintainable test data
+- Minimal data setup per test (chỉ tạo necessary entities)
+- Tất cả audit fields được handle bởi entity @PrePersist hooks
+- Foreign key relationships được establish properly trước khi save
+
+**Transaction Management**:
+- `@Transactional` trên test class ensure rollback sau mỗi test
+- Không cần manual cleanup - automatic via transaction rollback
+- Isolated test execution - không data leakage giữa tests
+
+**Assertions**:
+- Verify return DTOs có correct values
+- Check database state sau operations (counts, field values)
+- Sử dụng Assertions từ JUnit 5 (assertNotNull, assertEquals, assertTrue, etc.)
+- Throws assertions validate exception behavior
+
+**Các bước tiếp theo**: 
+- Implement BookingControllerIntegrationTest (16 endpoint tests)
+- Implement BookingTransactionIntegrationTest (6 transaction atomicity tests)
+- Implement AvailabilityFlowIntegrationTest (8 dynamic filtering tests)
+- Implement BookingErrorHandlingTest (6 error scenario tests)
+

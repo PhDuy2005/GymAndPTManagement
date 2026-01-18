@@ -9,7 +9,7 @@
 
 ## 📊 Tổng Quan Công Việc
 
-### ✅ Đã Hoàn Thành (13/22)
+### ✅ Đã Hoàn Thành (10/22)
 - User
 - Role  
 - Permission
@@ -20,11 +20,8 @@
 - Slot
 - AvailableSlot
 - BodyMetrics
-- Food ✅
-- DailyDiet ✅
-- DietDetail ✅
 
-### 🔨 Cần Implement (9/22)
+### 🔨 Cần Implement (12/22)
 
 ---
 
@@ -130,59 +127,59 @@
 
 ### ✅ CHECKPOINT 1 - Ngày 1
 #### 1. Contract Entity (Ưu tiên cao)
-- [ ] Entity class (`domain/table/Contract.java`)
-- [ ] Repository (`repository/ContractRepository.java`)
-- [ ] Service class
-- [ ] Request/Response DTOs
-- [ ] REST Controller
-- [ ] Contract status management (ACTIVE, EXPIRED, CANCELLED)
-- [ ] Date validation (start_date < end_date)
+- [X] Entity class (`domain/table/Contract.java`)
+- [X] Repository (`repository/ContractRepository.java`)
+- [X] Service class
+- [X] Request/Response DTOs
+- [X] REST Controller
+- [X] Contract status management (ACTIVE, EXPIRED, CANCELLED)
+- [X] Date validation (start_date < end_date)
 
 ### ✅ CHECKPOINT 2 - Ngày 2
 #### 2. Booking Entity
-- [ ] Entity class (`domain/table/Booking.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
-- [ ] Booking validation (slot availability, contract validity)
-- [ ] Conflict detection
+- [X] Entity class (`domain/table/Booking.java`)
+- [X] Repository
+- [X] Service layer
+- [X] DTOs
+- [X] Controller
+- [X] Booking validation (slot availability, contract validity)
+- [X] Conflict detection
 
 ### ✅ CHECKPOINT 3 - Ngày 3
 #### 3. Checkin Log Entity
-- [ ] Entity class (`domain/table/CheckinLog.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
+- [X] Entity class (`domain/table/CheckinLog.java`)
+- [X] Repository
+- [X] Service layer
+- [X] DTOs
+- [X] Controller
 - [ ] Auto-calculate duration
-- [ ] Attendance tracking
+- [X] Attendance tracking
 
 ### ✅ CHECKPOINT 4 - Ngày 4 (Billing)
 #### 4. Invoice Entity
-- [ ] Entity class (`domain/table/Invoice.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
+- [X] Entity class (`domain/table/Invoice.java`)
+- [X] Repository
+- [X] Service layer
+- [X] DTOs
+- [X] Controller
 - [ ] Payment status management
-- [ ] Auto-calculate final_amount
+- [X] Auto-calculate final_amount
 
 #### 5. Invoice Detail Entity
-- [ ] Entity class (`domain/table/InvoiceDetail.java`)
-- [ ] Repository
-- [ ] Service layer
-- [ ] DTOs
-- [ ] Controller
-- [ ] Auto-calculate total_amount (quantity × unit_price)
-- [ ] Link to ServicePackage OR AdditionalService
+- [X] Entity class (`domain/table/InvoiceDetail.java`)
+- [X] Repository
+- [X] Service layer
+- [X] DTOs
+- [X] Controller
+- [X] Auto-calculate total_amount (quantity × unit_price)
+- [X] Link to ServicePackage OR AdditionalService
 
 ### ✅ CHECKPOINT 5 - Ngày 5 (Testing & Integration)
-- [ ] Integration testing cho booking flow
-- [ ] Testing payment flow
-- [ ] End-to-end testing
-- [ ] API documentation
-- [ ] Bug fixes
+- [X] Integration testing cho booking flow
+- [X] Testing payment flow
+- [X] End-to-end testing
+- [X] API documentation
+- [X] Bug fixes
 
 ---
 
@@ -190,38 +187,31 @@
 
 ### ✅ CHECKPOINT 1 - Ngày 1
 #### 1. Food Entity (Ưu tiên cao)
-- [X] Entity class (`domain/table/Food.java`)
-- [X] Repository (`repository/FoodRepository.java`)
-- [X] Service class (`service/FoodService.java`)
-- [X] Request/Response DTOs (ReqCreateFoodDTO, ReqUpdateFoodDTO, ResFoodDTO)
-- [X] REST Controller (`controller/FoodController.java`)
-- [X] Nutrition database management
-- [X] Auto-calculate calories and food type
-- [X] **Documentation** (`.github/instruction/controller-example/FoodController.md`)
+- [ ] Entity class (`domain/table/Food.java`)
+- [ ] Repository (`repository/FoodRepository.java`)
+- [ ] Service class
+- [ ] Request/Response DTOs
+- [ ] REST Controller
+- [ ] Nutrition database management
 
 ### ✅ CHECKPOINT 2 - Ngày 2 (Diet Management)
 #### 2. Daily Diet Entity
-- [X] Entity class (`domain/table/DailyDiet.java`)
-- [X] Repository (`repository/DailyDietRepository.java`)
-- [X] Service layer (`service/DailyDietService.java`)
-- [X] DTOs (ReqCreateDailyDietDTO, ReqUpdateDailyDietDTO, ResDailyDietDTO)
-- [X] Controller (`controller/DailyDietController.java`)
-- [X] Diet plan creation
-- [X] Water intake tracking
-- [X] Date range filtering
-- [X] Cascade loading diet details
-- [X] **Documentation** (`.github/instruction/controller-example/DailyDietController.md`)
+- [ ] Entity class (`domain/table/DailyDiet.java`)
+- [ ] Repository
+- [ ] Service layer
+- [ ] DTOs
+- [ ] Controller
+- [ ] Diet plan creation
+- [ ] Water intake tracking
 
 #### 3. Diet Detail Entity (Composite Key)
-- [X] Entity class (`domain/table/DietDetail.java`)
-- [X] Composite key class (`domain/table/DietDetailId.java`)
-- [X] Repository (`repository/DietDetailRepository.java`)
-- [X] Service layer (`service/DietDetailService.java`)
-- [X] DTOs (ReqCreateDietDetailDTO, ReqUpdateDietDetailDTO, ResDietDetailDTO)
-- [X] Controller (`controller/DietDetailController.java`)
-- [X] Handle composite primary key correctly
-- [X] Nutrition calculation (total = per100g/100 × amount)
-- [X] **Documentation** (`.github/instruction/controller-example/DietDetailController.md`)
+- [ ] Entity class (`domain/table/DietDetail.java`)
+- [ ] Composite key class (`domain/table/DietDetailId.java`)
+- [ ] Repository
+- [ ] Service layer
+- [ ] DTOs
+- [ ] Controller
+- [ ] Handle composite primary key correctly
 
 ### ✅ CHECKPOINT 3 - Ngày 3 (Workout)
 #### 4. Workout Device Entity

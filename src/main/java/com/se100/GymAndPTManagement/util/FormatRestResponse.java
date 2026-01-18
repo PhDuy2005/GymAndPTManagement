@@ -59,4 +59,29 @@ public class FormatRestResponse implements ResponseBodyAdvice<Object> {
         return restResponse;
     }
 
+    // Static helper methods
+    public static <T> RestResponse<T> success(T data) {
+        return RestResponse.<T>builder()
+                .statusCode(200)
+                .data(data)
+                .message("Success")
+                .build();
+    }
+
+    public static <T> RestResponse<T> success(T data, String message) {
+        return RestResponse.<T>builder()
+                .statusCode(200)
+                .data(data)
+                .message(message)
+                .build();
+    }
+
+    public static <T> RestResponse<T> error(String message) {
+        return RestResponse.<T>builder()
+                .statusCode(400)
+                .error(message)
+                .message(message)
+                .build();
+    }
+
 }
