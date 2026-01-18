@@ -14,6 +14,7 @@ import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateBookingDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResBookingDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResAvailableSlotDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResAvailablePTDTO;
+import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
 import com.se100.GymAndPTManagement.repository.*;
 import com.se100.GymAndPTManagement.util.enums.ContractStatusEnum;
 
@@ -22,6 +23,9 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @RequiredArgsConstructor
@@ -191,36 +195,83 @@ public class BookingService {
     }
 
     /**
-     * Get all bookings for a member
+     * Get all bookings with pagination
+     * 
+     * @param pageable Pagination parameters
+     * @return Paginated list of bookings
      */
     @Transactional(readOnly = true)
-    public List<ResBookingDTO> getAllBookings() {
-        return bookingRepository.findAll()
-                .stream()
+    public ResultPaginationDTO getAllBookings(Pageable pageable) {
+        Page<Booking> page = bookingRepository.findAll(pageable);
+
+        List<ResBookingDTO> bookingDTOs = page.getContent().stream()
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
+
+        ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
+        meta.setPage(page.getNumber() + 1);
+        meta.setPageSize(page.getSize());
+        meta.setTotalPages(page.getTotalPages());
+        meta.setTotalItems(page.getTotalElements());
+
+        ResultPaginationDTO result = new ResultPaginationDTO();
+        result.setMeta(meta);
+        result.setResult(bookingDTOs);
+        return result;
     }
 
     /**
-     * Get all bookings for a member
+     * Get all bookings for a member with pagination
+     * 
+     * @param memberId Member ID
+     * @param pageable Pagination parameters
+     * @return Paginated list of member's bookings
      */
     @Transactional(readOnly = true)
-    public List<ResBookingDTO> getBookingsByMember(Long memberId) {
-        return bookingRepository.findByMemberId(memberId)
-                .stream()
+    public ResultPaginationDTO getBookingsByMember(Long memberId, Pageable pageable) {
+        Page<Booking> page = bookingRepository.findByMemberId(memberId, pageable);
+
+        List<ResBookingDTO> bookingDTOs = page.getContent().stream()
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
+
+        ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
+        meta.setPage(page.getNumber() + 1);
+        meta.setPageSize(page.getSize());
+        meta.setTotalPages(page.getTotalPages());
+        meta.setTotalItems(page.getTotalElements());
+
+        ResultPaginationDTO result = new ResultPaginationDTO();
+        result.setMeta(meta);
+        result.setResult(bookingDTOs);
+        return result;
     }
 
     /**
-     * Get all bookings for a PT
+     * Get all bookings for a PT with pagination
+     * 
+     * @param ptId Personal Trainer ID
+     * @param pageable Pagination parameters
+     * @return Paginated list of PT's bookings
      */
     @Transactional(readOnly = true)
-    public List<ResBookingDTO> getBookingsByPT(Long ptId) {
-        return bookingRepository.findByRealPtId(ptId)
-                .stream()
+    public ResultPaginationDTO getBookingsByPT(Long ptId, Pageable pageable) {
+        Page<Booking> page = bookingRepository.findByRealPtId(ptId, pageable);
+
+        List<ResBookingDTO> bookingDTOs = page.getContent().stream()
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
+
+        ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
+        meta.setPage(page.getNumber() + 1);
+        meta.setPageSize(page.getSize());
+        meta.setTotalPages(page.getTotalPages());
+        meta.setTotalItems(page.getTotalElements());
+
+        ResultPaginationDTO result = new ResultPaginationDTO();
+        result.setMeta(meta);
+        result.setResult(bookingDTOs);
+        return result;
     }
 
     /**

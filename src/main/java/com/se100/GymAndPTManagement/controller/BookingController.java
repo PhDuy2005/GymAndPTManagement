@@ -6,6 +6,7 @@
  */
 package com.se100.GymAndPTManagement.controller;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +16,7 @@ import com.se100.GymAndPTManagement.domain.responseDTO.RestResponse;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResBookingDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResAvailableSlotDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResAvailablePTDTO;
+import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
 import com.se100.GymAndPTManagement.service.BookingService;
 import com.se100.GymAndPTManagement.util.annotation.ApiMessage;
 
@@ -32,22 +34,18 @@ public class BookingController {
     private final BookingService bookingService;
 
     /**
-     * Get all bookings (for booking list page)
+     * Get all bookings with pagination
      * 
-     * @return List of all bookings
+     * @param pageable Pagination parameters (page, size, sort)
+     * @return Paginated list of all bookings
      */
     @GetMapping
     @ApiMessage("Lấy danh sách tất cả lịch đặt")
-    public ResponseEntity<RestResponse<List<ResBookingDTO>>> getAllBookings() {
+    public ResponseEntity<ResultPaginationDTO> getAllBookings(Pageable pageable) {
 
-        List<ResBookingDTO> bookings = bookingService.getAllBookings();
+        ResultPaginationDTO result = bookingService.getAllBookings(pageable);
 
-        return ResponseEntity.ok(
-                RestResponse.<List<ResBookingDTO>>builder()
-                        .statusCode(200)
-                        .message("Lấy danh sách lịch đặt thành công")
-                        .data(bookings)
-                        .build());
+        return ResponseEntity.ok(result);
     }
 
     /**
@@ -128,45 +126,39 @@ public class BookingController {
     }
 
     /**
-     * Get all bookings for a specific member
+     * Get all bookings for a specific member with pagination
      * 
      * @param memberId Member ID
-     * @return List of member's bookings
+     * @param pageable Pagination parameters
+     * @return Paginated list of member's bookings
      */
     @GetMapping("/member/{memberId}")
     @ApiMessage("Lấy danh sách lịch đặt của thành viên")
-    public ResponseEntity<RestResponse<List<ResBookingDTO>>> getBookingsByMember(
-            @PathVariable Long memberId) {
+    public ResponseEntity<ResultPaginationDTO> getBookingsByMember(
+            @PathVariable Long memberId,
+            Pageable pageable) {
 
-        List<ResBookingDTO> bookings = bookingService.getBookingsByMember(memberId);
+        ResultPaginationDTO result = bookingService.getBookingsByMember(memberId, pageable);
 
-        return ResponseEntity.ok(
-                RestResponse.<List<ResBookingDTO>>builder()
-                        .statusCode(200)
-                        .message("Lấy danh sách lịch đặt thành công")
-                        .data(bookings)
-                        .build());
+        return ResponseEntity.ok(result);
     }
 
     /**
-     * Get all bookings for a specific PT
+     * Get all bookings for a specific PT with pagination
      * 
      * @param ptId Personal Trainer ID
-     * @return List of PT's bookings
+     * @param pageable Pagination parameters
+     * @return Paginated list of PT's bookings
      */
     @GetMapping("/pt/{ptId}")
     @ApiMessage("Lấy danh sách lịch đặt của PT")
-    public ResponseEntity<RestResponse<List<ResBookingDTO>>> getBookingsByPT(
-            @PathVariable Long ptId) {
+    public ResponseEntity<ResultPaginationDTO> getBookingsByPT(
+            @PathVariable Long ptId,
+            Pageable pageable) {
 
-        List<ResBookingDTO> bookings = bookingService.getBookingsByPT(ptId);
+        ResultPaginationDTO result = bookingService.getBookingsByPT(ptId, pageable);
 
-        return ResponseEntity.ok(
-                RestResponse.<List<ResBookingDTO>>builder()
-                        .statusCode(200)
-                        .message("Lấy danh sách lịch đặt thành công")
-                        .data(bookings)
-                        .build());
+        return ResponseEntity.ok(result);
     }
 
     /**
