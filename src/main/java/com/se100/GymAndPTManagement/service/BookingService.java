@@ -113,12 +113,19 @@ public class BookingService {
                 .orElseThrow(() -> new IllegalArgumentException("Member không tồn tại"));
 
         // Step 2: Find active contract for member that covers booking date
-        Contract activeContract = contractRepository.findByMemberIdAndStatusAndDateRange(
+        // If multiple contracts exist for same date, pick the one with earliest end date
+        List<Contract> activeContracts = contractRepository.findByMemberIdAndStatusAndDateRange(
                 dto.getMemberId(),
                 ContractStatusEnum.ACTIVE,
-                dto.getBookingDate())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Thành viên không có hợp đồng hoạt động hợp lệ cho ngày đặt lịch này"));
+                dto.getBookingDate());
+        
+        if (activeContracts.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Thành viên không có hợp đồng hoạt động hợp lệ cho ngày đặt lịch này");
+        }
+        
+        // Pick the first one (already ordered by endDate ASC, so earliest end date first)
+        Contract activeContract = activeContracts.get(0);
 
         // Step 2.1: Check if contract has expired (by end_date or remaining_sessions = 0)
         if (activeContract.getEndDate().isBefore(dto.getBookingDate())) {

@@ -41,8 +41,9 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
     List<Contract> findByStatusOrderByEndDateDesc(ContractStatusEnum status);
 
     /**
-     * Find active contract for a member that covers a specific date
+     * Find active contracts for a member that covers a specific date
      * Used for booking validation - checks if member has valid contract on booking date
+     * Returns list ordered by end date (earliest first) - caller should pick first one
      */
     @Query("""
         SELECT c FROM Contract c
@@ -50,8 +51,9 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
         AND c.status = :status
         AND c.startDate <= :bookingDate
         AND c.endDate >= :bookingDate
+        ORDER BY c.endDate ASC
     """)
-    Optional<Contract> findByMemberIdAndStatusAndDateRange(
+    List<Contract> findByMemberIdAndStatusAndDateRange(
         @Param("memberId") Long memberId,
         @Param("status") ContractStatusEnum status,
         @Param("bookingDate") LocalDate bookingDate

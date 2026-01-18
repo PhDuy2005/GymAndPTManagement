@@ -113,6 +113,38 @@ public class InvoiceController {
     }
     
     /**
+     * Get all invoices
+     * GET /api/v1/invoices
+     * 
+     * @return - List of ResInvoiceDTO
+     */
+    @GetMapping
+    @ApiMessage("Get all invoices")
+    public ResponseEntity<RestResponse<List<ResInvoiceDTO>>> getAllInvoices() {
+        
+        logger.debug("GET /api/v1/invoices - Fetching all invoices");
+        
+        try {
+            List<ResInvoiceDTO> invoices = invoiceService.getAllInvoices();
+            
+            return ResponseEntity.ok(
+                RestResponse.<List<ResInvoiceDTO>>builder()
+                    .statusCode(200)
+                    .message("All invoices retrieved successfully")
+                    .data(invoices)
+                    .build());
+                    
+        } catch (Exception e) {
+            logger.error("Error retrieving all invoices", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(RestResponse.<List<ResInvoiceDTO>>builder()
+                    .statusCode(500)
+                    .message("Internal server error")
+                    .build());
+        }
+    }
+    
+    /**
      * Get all invoices for a member
      * GET /api/v1/invoices/member/{memberId}
      * 

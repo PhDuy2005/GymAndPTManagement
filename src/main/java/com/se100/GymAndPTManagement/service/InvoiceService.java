@@ -184,6 +184,23 @@ public class InvoiceService {
             .collect(Collectors.toList());
     }
     
+    @Transactional(readOnly = true)
+    public List<ResInvoiceDTO> getAllInvoices() {
+        logger.debug("Fetching all invoices");
+        
+        List<Invoice> invoices = invoiceRepository.findAll();
+        
+        return invoices.stream()
+            .map(invoice -> {
+                List<InvoiceDetail> details = invoiceDetailRepository.findByInvoiceId(invoice.getId());
+                List<ResInvoiceDetailDTO> detailDTOs = details.stream()
+                    .map(this::mapInvoiceDetailToDTO)
+                    .collect(Collectors.toList());
+                return mapInvoiceToDTO(invoice, detailDTOs);
+            })
+            .collect(Collectors.toList());
+    }
+    
     @Transactional
     public ResInvoiceDTO updatePaymentStatus(Long invoiceId, PaymentStatusEnum newStatus) {
         logger.info("Updating payment status for invoice ID: {} to {}", invoiceId, newStatus);
