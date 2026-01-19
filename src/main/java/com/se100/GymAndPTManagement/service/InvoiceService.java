@@ -7,22 +7,26 @@
 package com.se100.GymAndPTManagement.service;
 
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateAdditionalServiceInvoiceDTO;
+import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateInvoiceDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResInvoiceDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResInvoiceDetailDTO;
 import com.se100.GymAndPTManagement.domain.table.Invoice;
 import com.se100.GymAndPTManagement.domain.table.InvoiceDetail;
 import com.se100.GymAndPTManagement.domain.table.Member;
 import com.se100.GymAndPTManagement.domain.table.AdditionalService;
+import com.se100.GymAndPTManagement.domain.table.ServicePackage;
 import com.se100.GymAndPTManagement.repository.InvoiceRepository;
 import com.se100.GymAndPTManagement.repository.InvoiceDetailRepository;
 import com.se100.GymAndPTManagement.repository.MemberRepository;
 import com.se100.GymAndPTManagement.repository.AdditionalServiceRepository;
+import com.se100.GymAndPTManagement.repository.ServicePackageRepository;
 import com.se100.GymAndPTManagement.util.enums.PaymentStatusEnum;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,15 +39,18 @@ public class InvoiceService {
     private final InvoiceDetailRepository invoiceDetailRepository;
     private final MemberRepository memberRepository;
     private final AdditionalServiceRepository additionalServiceRepository;
+    private final ServicePackageRepository servicePackageRepository;
     
     public InvoiceService(InvoiceRepository invoiceRepository,
                          InvoiceDetailRepository invoiceDetailRepository,
                          MemberRepository memberRepository,
-                         AdditionalServiceRepository additionalServiceRepository) {
+                         AdditionalServiceRepository additionalServiceRepository,
+                         ServicePackageRepository servicePackageRepository) {
         this.invoiceRepository = invoiceRepository;
         this.invoiceDetailRepository = invoiceDetailRepository;
         this.memberRepository = memberRepository;
         this.additionalServiceRepository = additionalServiceRepository;
+        this.servicePackageRepository = servicePackageRepository;
     }
     
     @Transactional
@@ -267,6 +274,158 @@ public class InvoiceService {
             .build();
     }
     
+    /**
+     * Delete invoice by ID (also deletes associated invoice details)
+     * This method implements cascade delete to remove all invoice details first,
+     * then delete the invoice itself
+     * 
+     * @param invoiceId - Invoice ID to delete
+     * @throws IllegalArgumentException if invoice not found
+     */
+    @Transactional
+    public void deleteInvoice(Long invoiceId) {
+        logger.info("Deleting invoice ID: {}", invoiceId);
+        
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+            .orElseThrow(() -> {
+                logger.error("Invoice not found with ID: {}", invoiceId);
+                return new IllegalArgumentException("Invoice not found with ID: " + invoiceId);
+            });
+        
+        // Step 1: Delete all invoice details associated with this invoice
+        List<InvoiceDetail> invoiceDetails = invoiceDetailRepository.findByInvoiceId(invoiceId);
+        if (!invoiceDetails.isEmpty()) {
+            logger.info("Deleting {} invoice details for invoice ID: {}", invoiceDetails.size(), invoiceId);
+            invoiceDetailRepository.deleteAll(invoiceDetails);
+        }
+        
+        // Step 2: Delete the invoice itself
+        invoiceRepository.delete(invoice);
+        logger.info("Invoice deleted successfully with ID: {}", invoiceId);
+    }
+
+    /**
+     * Update invoice information with cascade update to invoice details
+     * 
+     * Validation rules:
+     * 1. Invoice must exist
+     * 2. Member must exist
+     * 3. Discount amount must be >= 0
+     * 4. Invoice details must not be empty
+     * 5. For each detail: calculate total amount (quantity × unitPrice)
+     * 6. Calculate invoice totals: sum of detail totals - discount
+     * 
+     * @param invoiceId Invoice ID to update
+     * @param request Update request with invoice and detail information
+     * @return Updated invoice response DTO
+     * @throws IllegalArgumentException if validation fails
+     */
+    @Transactional
+    public ResInvoiceDTO updateInvoice(Long invoiceId, ReqUpdateInvoiceDTO request) {
+        logger.info("Updating invoice ID: {}", invoiceId);
+        
+        // Step 1: Fetch and validate invoice exists
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> {
+                    logger.error("Invoice not found with ID: {}", invoiceId);
+                    return new IllegalArgumentException("Invoice not found with ID: " + invoiceId);
+                });
+        
+        // Step 2: Validate member exists
+        Member member = memberRepository.findById(request.getMemberId())
+                .orElseThrow(() -> {
+                    logger.error("Member not found with ID: {}", request.getMemberId());
+                    return new IllegalArgumentException("Member not found with ID: " + request.getMemberId());
+                });
+        
+        // Step 3: Validate discount amount
+        if (request.getDiscountAmount() == null || request.getDiscountAmount().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Chiết khấu phải >= 0");
+        }
+        
+        // Step 4: Validate invoice details not empty
+        if (request.getDetails() == null || request.getDetails().isEmpty()) {
+            throw new IllegalArgumentException("Chi tiết hóa đơn không được để trống");
+        }
+        
+        // Step 5: Delete existing invoice details and create new ones
+        List<InvoiceDetail> existingDetails = invoiceDetailRepository.findByInvoiceId(invoiceId);
+        invoiceDetailRepository.deleteAll(existingDetails);
+        logger.info("Deleted {} existing invoice details for invoice ID: {}", existingDetails.size(), invoiceId);
+        
+        // Step 6: Create and save new invoice details, calculate totals
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        List<InvoiceDetail> newDetails = new ArrayList<>();
+        
+        for (ReqUpdateInvoiceDTO.ReqUpdateInvoiceDetailDTO detailRequest : request.getDetails()) {
+            // Validate detail data
+            if (detailRequest.getQuantity() <= 0) {
+                throw new IllegalArgumentException("Số lượng phải lớn hơn 0");
+            }
+            if (detailRequest.getUnitPrice() == null || detailRequest.getUnitPrice().compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("Đơn giá phải >= 0");
+            }
+            
+            // Calculate detail total
+            BigDecimal detailTotal = detailRequest.getUnitPrice()
+                    .multiply(new BigDecimal(detailRequest.getQuantity()));
+            totalAmount = totalAmount.add(detailTotal);
+            
+            // Create new invoice detail
+            InvoiceDetail detail = new InvoiceDetail();
+            detail.setInvoice(invoice);
+            detail.setQuantity(detailRequest.getQuantity());
+            detail.setUnitPrice(detailRequest.getUnitPrice());
+            detail.setTotalAmount(detailTotal);
+            
+            // Set optional service package or additional service
+            if (detailRequest.getServicePackageId() != null) {
+                ServicePackage servicePackage = servicePackageRepository.findById(detailRequest.getServicePackageId())
+                        .orElseThrow(() -> new IllegalArgumentException("Service package not found with ID: " + detailRequest.getServicePackageId()));
+                detail.setServicePackage(servicePackage);
+            }
+            
+            if (detailRequest.getAdditionalServiceId() != null) {
+                AdditionalService additionalService = additionalServiceRepository.findById(detailRequest.getAdditionalServiceId())
+                        .orElseThrow(() -> new IllegalArgumentException("Additional service not found with ID: " + detailRequest.getAdditionalServiceId()));
+                detail.setAdditionalService(additionalService);
+            }
+            
+            newDetails.add(detail);
+        }
+        
+        // Step 7: Save new invoice details
+        invoiceDetailRepository.saveAll(newDetails);
+        logger.info("Created {} new invoice details for invoice ID: {}", newDetails.size(), invoiceId);
+        
+        // Step 8: Validate discount doesn't exceed total amount
+        if (request.getDiscountAmount().compareTo(totalAmount) > 0) {
+            throw new IllegalArgumentException("Chiết khấu không được vượt quá tổng tiền");
+        }
+        
+        // Step 9: Calculate final amount
+        BigDecimal finalAmount = totalAmount.subtract(request.getDiscountAmount());
+        
+        // Step 10: Update invoice information
+        invoice.setMember(member);
+        invoice.setTotalAmount(totalAmount);
+        invoice.setDiscountAmount(request.getDiscountAmount());
+        invoice.setFinalAmount(finalAmount);
+        invoice.setPaymentMethod(request.getPaymentMethod());
+        
+        // Step 11: Save and return updated invoice
+        Invoice updatedInvoice = invoiceRepository.save(invoice);
+        logger.info("Invoice updated successfully with ID: {}, Total: {}, Discount: {}, Final: {}",
+                   invoiceId, totalAmount, request.getDiscountAmount(), finalAmount);
+        
+        List<InvoiceDetail> updatedDetails = invoiceDetailRepository.findByInvoiceId(invoiceId);
+        List<ResInvoiceDetailDTO> detailDTOs = updatedDetails.stream()
+            .map(this::mapInvoiceDetailToDTO)
+            .collect(Collectors.toList());
+        
+        return mapInvoiceToDTO(updatedInvoice, detailDTOs);
+    }
+
     /**
      * Map Invoice entity to response DTO with details
      */

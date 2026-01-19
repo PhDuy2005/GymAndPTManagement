@@ -7,9 +7,11 @@
 package com.se100.GymAndPTManagement.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCheckinDTO;
+import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateCheckinDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.RestResponse;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResCheckinLogDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResAttendanceTrackingDTO;
@@ -21,9 +23,15 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 @RestController
 @RequestMapping("/api/v1/checkins")
 @RequiredArgsConstructor
+@Tag(name = "Check-in Management", description = "APIs for member check-in and attendance tracking")
 public class CheckinLogController {
 
     private final CheckinLogService checkinLogService;
@@ -36,6 +44,12 @@ public class CheckinLogController {
      */
     @PostMapping
     @ApiMessage("Tạo check-in log khi thành viên đến tập")
+    @Operation(summary = "Create check-in log", description = "Record member check-in for a specific booking")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Check-in successful"),
+            @ApiResponse(responseCode = "400", description = "Invalid check-in request"),
+            @ApiResponse(responseCode = "404", description = "Booking not found")
+    })
     public ResponseEntity<RestResponse<ResCheckinLogDTO>> checkIn(
             @Valid @RequestBody ReqCheckinDTO dto) {
 
@@ -67,6 +81,12 @@ public class CheckinLogController {
      */
     @PutMapping("/checkout/{bookingId}")
     @ApiMessage("Cập nhật check-out khi thành viên kết thúc buổi tập")
+    @Operation(summary = "Check-out member", description = "Record check-out when member finishes workout session")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Check-out successful"),
+            @ApiResponse(responseCode = "400", description = "Invalid checkout operation"),
+            @ApiResponse(responseCode = "404", description = "Check-in log not found")
+    })
     public ResponseEntity<RestResponse<ResCheckinLogDTO>> checkOut(
             @PathVariable Long bookingId) {
 
@@ -227,6 +247,76 @@ public class CheckinLogController {
                     .body(RestResponse.<ResAttendanceTrackingDTO>builder()
                             .statusCode(400)
                             .error("NOT_FOUND")
+                            .message(e.getMessage())
+                            .build());
+        }
+    }
+
+    /**
+     * Delete check-in log by ID
+     * 
+     * @param id Check-in log ID
+     * @return No content response
+     */
+    @DeleteMapping("/{id}")
+    @ApiMessage("Xóa check-in log")
+    @Operation(summary = "Delete check-in log", description = "Delete a check-in log by ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Check-in log deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Check-in log not found")
+    })
+    public ResponseEntity<Void> deleteCheckinLog(@PathVariable Long id) {
+        try {
+            checkinLogService.deleteCheckinLog(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    /**
+     * Update check-in log information
+     * PUT /api/v1/checkins/{id}
+     * 
+     * @param id Check-in log ID
+     * @param request Update request with new check-in information
+     * @return Updated check-in log details
+     */
+    @PutMapping("/{id}")
+    @ApiMessage("Cập nhật thông tin check-in")
+    @Operation(
+        summary = "Update check-in log information",
+        description = "Update check-in log details including associated booking, check-in time, and optional check-out time. "
+                    + "Validates that check-out time (if provided) is after check-in time."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Check-in log updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Validation error - check-out time before check-in time"),
+            @ApiResponse(responseCode = "404", description = "Check-in log or booking not found")
+    })
+    public ResponseEntity<RestResponse<ResCheckinLogDTO>> updateCheckinLog(
+            @PathVariable Long id,
+            @Valid @RequestBody ReqUpdateCheckinDTO request) {
+        try {
+            ResCheckinLogDTO updatedCheckinLog = checkinLogService.updateCheckinLog(id, request);
+            return ResponseEntity.ok(
+                    RestResponse.<ResCheckinLogDTO>builder()
+                            .statusCode(200)
+                            .message("Cập nhật check-in log thành công")
+                            .data(updatedCheckinLog)
+                            .build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(RestResponse.<ResCheckinLogDTO>builder()
+                            .statusCode(400)
+                            .error("VALIDATION_ERROR")
+                            .message(e.getMessage())
+                            .build());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(RestResponse.<ResCheckinLogDTO>builder()
+                            .statusCode(400)
+                            .error("VALIDATION_ERROR")
                             .message(e.getMessage())
                             .build());
         }

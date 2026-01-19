@@ -11,12 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.se100.GymAndPTManagement.domain.table.*;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateBookingDTO;
+import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateBookingDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResBookingDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResAvailableSlotDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResAvailablePTDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
 import com.se100.GymAndPTManagement.repository.*;
 import com.se100.GymAndPTManagement.util.enums.ContractStatusEnum;
+import com.se100.GymAndPTManagement.util.enums.DayOfWeekEnum;
 
 import lombok.RequiredArgsConstructor;
 import java.time.DayOfWeek;
@@ -316,6 +318,70 @@ public class BookingService {
         booking.setRealPt(newPt);
         
         // Step 4: Save booking
+        Booking updatedBooking = bookingRepository.save(booking);
+        
+        return mapToResponseDTO(updatedBooking);
+    }
+
+    /**
+     * Update booking information (member, PT, slot, date)
+     * 
+     * Validation rules:
+     * 1. Booking must exist
+     * 2. Member must exist and be active
+     * 3. PT must exist and be associated with the contract
+     * 4. Slot must exist
+     * 5. New booking date must be future or present
+     * 6. Check availability: PT must be available at the new slot and date
+     * 
+     * @param bookingId Booking ID to update
+     * @param request Update request with new booking information
+     * @return Updated booking response DTO
+     * @throws IllegalArgumentException if validation fails
+     */
+    @Transactional
+    public ResBookingDTO updateBooking(Long bookingId, ReqUpdateBookingDTO request) {
+        // Step 1: Fetch and validate booking exists
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
+        
+        // Step 2: Validate new member exists and is active
+        Member newMember = memberRepository.findById(request.getMemberId())
+                .orElseThrow(() -> new IllegalArgumentException("Member không tồn tại"));
+        
+        // Step 3: Validate PT exists
+        PersonalTrainer newPt = personalTrainerRepository.findById(request.getPtId())
+                .orElseThrow(() -> new IllegalArgumentException("PT không tồn tại"));
+        
+        // Step 4: Validate slot exists
+        Slot newSlot = slotRepository.findById(request.getSlotId())
+                .orElseThrow(() -> new IllegalArgumentException("Slot không tồn tại"));
+        
+        // Step 5: Validate booking date is future or present
+        if (request.getBookingDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Ngày booking phải là ngày hiện tại hoặc trong tương lai");
+        }
+        
+        // Step 6: Check PT-Slot compatibility (PT must be available at this slot on this date)
+        DayOfWeek dayOfWeek = request.getBookingDate().getDayOfWeek();
+        AvailableSlot availableSlot = availableSlotRepository
+                .findBySlotIdAndPersonalTrainerIdAndDayOfWeek(request.getSlotId(), request.getPtId(), 
+                    DayOfWeekEnum.valueOf(dayOfWeek.name()))
+                .orElseThrow(() -> new IllegalArgumentException("PT không có sẵn vào khung giờ này"));
+        
+        // Step 7: Check PT has an active contract with the member
+        Contract contract = contractRepository
+                .findByMemberIdAndMainPtIdAndStatus(request.getMemberId(), request.getPtId(), ContractStatusEnum.ACTIVE)
+                .orElseThrow(() -> new IllegalArgumentException("PT không có hợp đồng hoạt động với thành viên này"));
+        
+        // Step 8: Update booking information
+        booking.setMember(newMember);
+        booking.setRealPt(newPt);
+        booking.setSlot(newSlot);
+        booking.setBookingDate(request.getBookingDate());
+        booking.setContract(contract);
+        
+        // Step 9: Save and return updated booking
         Booking updatedBooking = bookingRepository.save(booking);
         
         return mapToResponseDTO(updatedBooking);

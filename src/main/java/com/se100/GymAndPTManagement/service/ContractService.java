@@ -7,6 +7,7 @@
 package com.se100.GymAndPTManagement.service;
 
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateContractDTO;
+import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateContractDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResContractDTO;
 import com.se100.GymAndPTManagement.domain.table.Contract;
 import com.se100.GymAndPTManagement.domain.table.Invoice;
@@ -296,6 +297,83 @@ public class ContractService {
         
     // Mapper
     // =========================================
+    /**
+     * Delete contract by ID
+     * 
+     * @param contractId - Contract ID to delete
+     * @throws IllegalArgumentException if contract not found
+     */
+    @Transactional
+    public void deleteContract(Long contractId) {
+        Contract contract = contractRepository.findById(contractId)
+            .orElseThrow(() -> new IllegalArgumentException("Contract not found with ID: " + contractId));
+        
+        contractRepository.delete(contract);
+    }
+
+    /**
+     * Update contract information
+     * 
+     * Validation rules:
+     * 1. Contract must exist
+     * 2. Service package must exist
+     * 3. PT must exist
+     * 4. Start date must be present or future
+     * 5. End date must be after start date
+     * 6. Total sessions must be positive
+     * 7. If reducing total sessions, remaining sessions must not exceed new total
+     * 
+     * @param contractId Contract ID to update
+     * @param request Update request with new contract information
+     * @return Updated contract response DTO
+     * @throws IllegalArgumentException if validation fails
+     */
+    @Transactional
+    public ResContractDTO updateContract(Long contractId, ReqUpdateContractDTO request) {
+        // Step 1: Fetch and validate contract exists
+        Contract contract = contractRepository.findById(contractId)
+                .orElseThrow(() -> new IllegalArgumentException("Hợp đồng không tồn tại"));
+        
+        // Step 2: Validate new service package exists
+        ServicePackage servicePackage = servicePackageRepository.findById(request.getPackageId())
+                .orElseThrow(() -> new IllegalArgumentException("Gói dịch vụ không tồn tại"));
+        
+        // Step 3: Validate PT exists
+        PersonalTrainer personalTrainer = personalTrainerRepository.findById(request.getPtId())
+                .orElseThrow(() -> new IllegalArgumentException("PT không tồn tại"));
+        
+        // Step 4: Validate dates
+        if (request.getStartDate().isAfter(request.getEndDate())) {
+            throw new IllegalArgumentException("Ngày bắt đầu phải trước ngày kết thúc");
+        }
+        
+        // Step 5: Validate total sessions
+        if (request.getTotalSessions() <= 0) {
+            throw new IllegalArgumentException("Tổng số buổi phải lớn hơn 0");
+        }
+        
+        // Step 6: If reducing total sessions, validate remaining sessions doesn't exceed new total
+        if (request.getTotalSessions() < contract.getTotalSessions()) {
+            Integer remainingSessions = contract.getRemainingSessions() != null ? contract.getRemainingSessions() : contract.getTotalSessions();
+            if (remainingSessions > request.getTotalSessions()) {
+                throw new IllegalArgumentException("Không thể giảm tổng buổi vì số buổi còn lại vượt quá số buổi mới");
+            }
+        }
+        
+        // Step 7: Update contract information
+        contract.setServicePackage(servicePackage);
+        contract.setMainPt(personalTrainer);
+        contract.setStartDate(request.getStartDate());
+        contract.setEndDate(request.getEndDate());
+        contract.setTotalSessions(request.getTotalSessions());
+        contract.setNotes(request.getNotes());
+        
+        // Step 8: Save and return updated contract
+        Contract updatedContract = contractRepository.save(contract);
+        
+        return mapToResDTO(updatedContract);
+    }
+
     /**
      * Map Contract entity to ResContractDTO
      * Extracts all related data from Contract object and its relationships

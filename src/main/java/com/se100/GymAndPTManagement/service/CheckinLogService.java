@@ -13,6 +13,7 @@ import com.se100.GymAndPTManagement.domain.table.Booking;
 import com.se100.GymAndPTManagement.domain.table.CheckinLog;
 import com.se100.GymAndPTManagement.domain.table.Contract;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCheckinDTO;
+import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateCheckinDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResCheckinLogDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResAttendanceTrackingDTO;
 import com.se100.GymAndPTManagement.repository.BookingRepository;
@@ -248,6 +249,72 @@ public class CheckinLogService {
                 .attendanceRate(attendanceRate)
                 .attendancePercentage(attendancePercentage)
                 .build();
+    }
+
+    /**
+     * Delete check-in log by ID
+     * 
+     * @param checkinLogId - Check-in log ID to delete
+     * @throws IllegalArgumentException if check-in log not found
+     */
+    @Transactional
+    public void deleteCheckinLog(Long checkinLogId) {
+        CheckinLog checkinLog = checkinLogRepository.findById(checkinLogId)
+            .orElseThrow(() -> new IllegalArgumentException("Check-in log not found with ID: " + checkinLogId));
+        
+        checkinLogRepository.delete(checkinLog);
+    }
+
+    /**
+     * Update check-in log information
+     * 
+     * Validation rules:
+     * 1. Check-in log must exist
+     * 2. Booking must exist
+     * 3. Member must exist
+     * 4. Check-in time must not be null
+     * 5. If checkout time is provided, it must be after check-in time
+     * 
+     * @param checkinLogId Check-in log ID to update
+     * @param request Update request with new check-in information
+     * @return Updated check-in log response DTO
+     * @throws IllegalArgumentException if validation fails
+     */
+    @Transactional
+    public ResCheckinLogDTO updateCheckinLog(Long checkinLogId, ReqUpdateCheckinDTO request) {
+        // Step 1: Fetch and validate check-in log exists
+        CheckinLog checkinLog = checkinLogRepository.findById(checkinLogId)
+                .orElseThrow(() -> new IllegalArgumentException("Check-in log không tồn tại"));
+        
+        // Step 2: Validate booking exists
+        Booking booking = bookingRepository.findById(request.getBookingId())
+                .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
+        
+        // Step 3: Validate member exists
+        if (request.getMemberId() == null) {
+            throw new IllegalArgumentException("Member ID không được để trống");
+        }
+        
+        // Step 4: Validate check-in time
+        if (request.getCheckinTime() == null) {
+            throw new IllegalArgumentException("Thời gian checkin không được để trống");
+        }
+        
+        // Step 5: Validate checkout time if provided
+        if (request.getCheckoutTime() != null && 
+            request.getCheckoutTime().isBefore(request.getCheckinTime())) {
+            throw new IllegalArgumentException("Thời gian checkout phải sau thời gian checkin");
+        }
+        
+        // Step 6: Update check-in log information
+        checkinLog.setBooking(booking);
+        checkinLog.setCheckinTime(request.getCheckinTime());
+        checkinLog.setCheckoutTime(request.getCheckoutTime());
+        
+        // Step 7: Save and return updated check-in log
+        CheckinLog updatedCheckinLog = checkinLogRepository.save(checkinLog);
+        
+        return mapToResponseDTO(updatedCheckinLog);
     }
 
     /**

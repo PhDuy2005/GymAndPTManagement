@@ -7,6 +7,7 @@
 package com.se100.GymAndPTManagement.controller;
 
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateAdditionalServiceInvoiceDTO;
+import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateInvoiceDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResInvoiceDTO;
 import com.se100.GymAndPTManagement.service.InvoiceService;
 import com.se100.GymAndPTManagement.util.annotation.ApiMessage;
@@ -21,8 +22,14 @@ import org.slf4j.LoggerFactory;
 import jakarta.validation.Valid;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 @RestController
 @RequestMapping("/api/v1/invoices")
+@Tag(name = "Invoice Management", description = "APIs for managing invoices and payment tracking")
 public class InvoiceController {
     
     private static final Logger logger = LoggerFactory.getLogger(InvoiceController.class);
@@ -41,6 +48,12 @@ public class InvoiceController {
      */
     @PostMapping("/additional-service")
     @ApiMessage("Create invoice for additional service")
+    @Operation(summary = "Create invoice for additional service", description = "Generate invoice for additional service order with automatic status update")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Invoice created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid service or member data"),
+            @ApiResponse(responseCode = "404", description = "Service or member not found")
+    })
     public ResponseEntity<RestResponse<ResInvoiceDTO>> createInvoiceForAdditionalService(
             @Valid @RequestBody ReqCreateAdditionalServiceInvoiceDTO request) {
         
@@ -81,6 +94,11 @@ public class InvoiceController {
      */
     @GetMapping("/{id}")
     @ApiMessage("Get invoice by ID")
+    @Operation(summary = "Get invoice by ID", description = "Retrieve invoice details including payment information")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Invoice retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Invoice not found")
+    })
     public ResponseEntity<RestResponse<ResInvoiceDTO>> getInvoiceById(@PathVariable Long id) {
         
         logger.debug("GET /api/v1/invoices/{} - Fetching invoice", id);
@@ -120,6 +138,11 @@ public class InvoiceController {
      */
     @GetMapping
     @ApiMessage("Get all invoices")
+    @Operation(summary = "Get all invoices", description = "Retrieve all invoices from the system")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "All invoices retrieved successfully"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
     public ResponseEntity<RestResponse<List<ResInvoiceDTO>>> getAllInvoices() {
         
         logger.debug("GET /api/v1/invoices - Fetching all invoices");
@@ -222,6 +245,90 @@ public class InvoiceController {
                     .build());
         } catch (Exception e) {
             logger.error("Error updating payment status for invoice ID: {}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(RestResponse.<ResInvoiceDTO>builder()
+                    .statusCode(500)
+                    .message("Internal server error")
+                    .build());
+        }
+    }
+
+    /**
+     * Delete invoice by ID (also deletes associated invoice details)
+     * DELETE /api/v1/invoices/{id}
+     * 
+     * @param id - Invoice ID
+     * @return - No content response
+     */
+    @DeleteMapping("/{id}")
+    @ApiMessage("Xóa hóa đơn")
+    @Operation(summary = "Delete invoice", description = "Delete an invoice and all associated invoice details by ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Invoice deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Invoice not found")
+    })
+    public ResponseEntity<Void> deleteInvoice(@PathVariable Long id) {
+        logger.info("DELETE /api/v1/invoices/{} - Deleting invoice", id);
+        
+        try {
+            invoiceService.deleteInvoice(id);
+            logger.info("Invoice deleted successfully with ID: {}", id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            logger.warn("Invoice not found with ID: {}", id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            logger.error("Error deleting invoice with ID: {}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Update invoice information with cascade update to invoice details
+     * PUT /api/v1/invoices/{id}
+     * 
+     * @param id - Invoice ID
+     * @param request - Update request with invoice and detail information
+     * @return - Updated invoice response
+     */
+    @PutMapping("/{id}")
+    @ApiMessage("Cập nhật hóa đơn")
+    @Operation(
+        summary = "Update invoice with cascade detail update",
+        description = "Update invoice information and details. Automatically deletes all existing invoice details and creates new ones from the request. "
+                    + "Recalculates invoice totals, applies discount, and updates payment method. Each detail can reference either a service package or additional service."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Invoice updated successfully with all details replaced"),
+            @ApiResponse(responseCode = "400", description = "Validation error - empty details, discount exceeds total, or invalid service references"),
+            @ApiResponse(responseCode = "404", description = "Invoice, member, service package, or additional service not found")
+    })
+    public ResponseEntity<RestResponse<ResInvoiceDTO>> updateInvoice(
+            @PathVariable Long id,
+            @Valid @RequestBody ReqUpdateInvoiceDTO request) {
+        logger.info("PUT /api/v1/invoices/{} - Updating invoice", id);
+        
+        try {
+            ResInvoiceDTO updatedInvoice = invoiceService.updateInvoice(id, request);
+            logger.info("Invoice updated successfully with ID: {}", id);
+            
+            return ResponseEntity.ok(
+                RestResponse.<ResInvoiceDTO>builder()
+                    .statusCode(200)
+                    .message("Cập nhật hóa đơn thành công")
+                    .data(updatedInvoice)
+                    .build());
+                    
+        } catch (IllegalArgumentException e) {
+            logger.warn("Validation error updating invoice ID: {}, Error: {}", id, e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(RestResponse.<ResInvoiceDTO>builder()
+                    .statusCode(400)
+                    .error("VALIDATION_ERROR")
+                    .message(e.getMessage())
+                    .build());
+        } catch (Exception e) {
+            logger.error("Error updating invoice with ID: {}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(RestResponse.<ResInvoiceDTO>builder()
                     .statusCode(500)

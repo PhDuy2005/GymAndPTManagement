@@ -7,6 +7,7 @@
 package com.se100.GymAndPTManagement.controller;
 
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateContractDTO;
+import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateContractDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResContractDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.RestResponse;
 import com.se100.GymAndPTManagement.domain.table.Contract;
@@ -20,8 +21,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 @RestController
 @RequestMapping("/api/v1/contracts")
+@Tag(name = "Contract Management", description = "APIs for managing member contracts and service packages")
 public class ContractController {
     
     private final ContractService contractService;
@@ -32,6 +39,12 @@ public class ContractController {
     
     @PostMapping
     @ApiMessage("Create new contract with automatic invoice generation")
+    @Operation(summary = "Create new contract", description = "Create a new contract with automatic invoice generation for service package")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Contract created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid contract data or business rule violation"),
+            @ApiResponse(responseCode = "404", description = "Member or service package not found")
+    })
     public ResponseEntity<RestResponse<ResContractDTO>> createContract(@Valid @RequestBody ReqCreateContractDTO request) {
         try {
             ResContractDTO contract = contractService.createContractWithInvoice(request);
@@ -50,6 +63,11 @@ public class ContractController {
     
     @GetMapping
     @ApiMessage("Get all contracts")
+    @Operation(summary = "Get all contracts", description = "Retrieve all contracts with member and service package information")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Contracts retrieved successfully"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
     public ResponseEntity<RestResponse<List<ResContractDTO>>> getAllContracts() {
         List<Contract> contracts = contractService.getAllContracts();
         List<ResContractDTO> result = contracts.stream()
@@ -60,6 +78,11 @@ public class ContractController {
     
     @GetMapping("/{id}")
     @ApiMessage("Get contract by ID")
+    @Operation(summary = "Get contract by ID", description = "Retrieve contract details by contract ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Contract found"),
+            @ApiResponse(responseCode = "404", description = "Contract not found")
+    })
     public ResponseEntity<RestResponse<ResContractDTO>> getContractById(@PathVariable Long id) {
         return contractService.getContractById(id)
             .map(contract -> {
@@ -72,6 +95,11 @@ public class ContractController {
     
     @GetMapping("/member/{memberId}")
     @ApiMessage("Get contracts by member ID")
+    @Operation(summary = "Get contracts by member", description = "Retrieve all contracts for a specific member")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Contracts retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Member not found")
+    })
     public ResponseEntity<RestResponse<List<ResContractDTO>>> getContractsByMember(@PathVariable Long memberId) {
         List<Contract> contracts = contractService.getContractsByMember(memberId);
         List<ResContractDTO> result = contracts.stream()
@@ -82,6 +110,11 @@ public class ContractController {
     
     @GetMapping("/pt/{ptId}")
     @ApiMessage("Get contracts by personal trainer ID")
+    @Operation(summary = "Get contracts by PT", description = "Retrieve all contracts for a specific personal trainer")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Contracts retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Personal trainer not found")
+    })
     public ResponseEntity<RestResponse<List<ResContractDTO>>> getContractsByPt(@PathVariable Long ptId) {
         List<Contract> contracts = contractService.getContractsByPt(ptId);
         List<ResContractDTO> result = contracts.stream()
@@ -145,5 +178,75 @@ public class ContractController {
                 .signedAt(contract.getSignedAt())
                 .createdAt(contract.getCreatedAt())
                 .build();
+    }
+
+    /**
+     * Delete contract by ID
+     * 
+     * @param id Contract ID
+     * @return No content response
+     */
+    @DeleteMapping("/{id}")
+    @ApiMessage("Xóa hợp đồng")
+    @Operation(summary = "Delete contract", description = "Delete a contract by ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Contract deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Contract not found")
+    })
+    public ResponseEntity<Void> deleteContract(@PathVariable Long id) {
+        try {
+            contractService.deleteContract(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    /**
+     * Update contract information
+     * PUT /api/v1/contracts/{id}
+     * 
+     * @param id Contract ID
+     * @param request Update request with new contract information
+     * @return Updated contract details
+     */
+    @PutMapping("/{id}")
+    @ApiMessage("Cập nhật hợp đồng")
+    @Operation(
+        summary = "Update contract information",
+        description = "Update contract details including service package, personal trainer, start/end dates, and total sessions. "
+                    + "Validates dates are in correct order and prevents reducing session count below remaining sessions."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Contract updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Validation error - invalid dates, cannot reduce sessions, or discount exceeds total"),
+            @ApiResponse(responseCode = "404", description = "Contract, service package, or personal trainer not found")
+    })
+    public ResponseEntity<RestResponse<ResContractDTO>> updateContract(
+            @PathVariable Long id,
+            @Valid @RequestBody ReqUpdateContractDTO request) {
+        try {
+            ResContractDTO updatedContract = contractService.updateContract(id, request);
+            return ResponseEntity.ok(
+                    RestResponse.<ResContractDTO>builder()
+                            .statusCode(200)
+                            .message("Cập nhật hợp đồng thành công")
+                            .data(updatedContract)
+                            .build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(RestResponse.<ResContractDTO>builder()
+                            .statusCode(400)
+                            .error("VALIDATION_ERROR")
+                            .message(e.getMessage())
+                            .build());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(RestResponse.<ResContractDTO>builder()
+                            .statusCode(400)
+                            .error("VALIDATION_ERROR")
+                            .message(e.getMessage())
+                            .build());
+        }
     }
 }

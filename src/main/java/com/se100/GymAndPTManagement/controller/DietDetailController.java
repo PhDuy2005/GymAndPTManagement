@@ -27,6 +27,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import java.util.List;
@@ -39,6 +40,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/v1/diet-details")
+@Tag(name = "Diet Detail Management", description = "APIs for managing food items in daily diets")
 public class DietDetailController {
 
     private final DietDetailService dietDetailService;

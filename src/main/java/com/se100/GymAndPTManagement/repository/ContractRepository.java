@@ -70,4 +70,10 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
      * Useful for PT dashboard filtering
      */
     List<Contract> findByMainPtIdAndStatus(Long ptId, ContractStatusEnum status);
+    
+    /**
+     * Find a contract by member ID, personal trainer ID, and status
+     * Used for booking validation to check if PT has an active contract with the member
+     */
+    Optional<Contract> findByMemberIdAndMainPtIdAndStatus(Long memberId, Long ptId, ContractStatusEnum status);
 }

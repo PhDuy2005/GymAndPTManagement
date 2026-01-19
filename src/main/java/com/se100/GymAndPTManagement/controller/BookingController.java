@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateBookingDTO;
+import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateBookingDTO;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateBookingPTDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.RestResponse;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResBookingDTO;
@@ -27,9 +28,15 @@ import lombok.RequiredArgsConstructor;
 import java.time.LocalDate;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 @RestController
 @RequestMapping("/api/v1/bookings")
 @RequiredArgsConstructor
+@Tag(name = "Booking Management", description = "APIs for managing booking slots and availability")
 public class BookingController {
 
     private final BookingService bookingService;
@@ -42,6 +49,11 @@ public class BookingController {
      */
     @GetMapping
     @ApiMessage("Lấy danh sách tất cả lịch đặt")
+    @Operation(summary = "Get all bookings", description = "Retrieve all bookings with pagination support")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "List of bookings retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters")
+    })
     public ResponseEntity<ResultPaginationDTO> getAllBookings(@ParameterObject Pageable pageable) {
 
         ResultPaginationDTO result = bookingService.getAllBookings(pageable);
@@ -58,6 +70,11 @@ public class BookingController {
      */
     @GetMapping("/available-slots")
     @ApiMessage("Lấy danh sách khung giờ còn trống cho PT")
+    @Operation(summary = "Get available slots for PT", description = "Retrieve available time slots for a specific personal trainer on a given date")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Available slots retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Personal trainer not found")
+    })
     public ResponseEntity<RestResponse<List<ResAvailableSlotDTO>>> getAvailableSlotsForPT(
             @RequestParam Long ptId,
             @RequestParam LocalDate date) {
@@ -81,6 +98,11 @@ public class BookingController {
      */
     @GetMapping("/available-pts")
     @ApiMessage("Lấy danh sách PT còn trống cho khung giờ")
+    @Operation(summary = "Get available PTs for slot", description = "Retrieve available personal trainers for a specific time slot on a given date")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Available PTs retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Slot not found")
+    })
     public ResponseEntity<RestResponse<List<ResAvailablePTDTO>>> getAvailablePTsForSlot(
             @RequestParam Long slotId,
             @RequestParam LocalDate date) {
@@ -103,6 +125,12 @@ public class BookingController {
      */
     @PostMapping
     @ApiMessage("Tạo lịch đặt mới")
+    @Operation(summary = "Create booking", description = "Create a new booking for a member with a personal trainer in a specific time slot")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Booking created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid booking data or slot unavailable"),
+            @ApiResponse(responseCode = "404", description = "Member, PT, or slot not found")
+    })
     public ResponseEntity<RestResponse<ResBookingDTO>> createBooking(
             @Valid @RequestBody ReqCreateBookingDTO dto) {
 
@@ -218,6 +246,57 @@ public class BookingController {
                             .build());
 
         } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(RestResponse.<ResBookingDTO>builder()
+                            .statusCode(400)
+                            .error("VALIDATION_ERROR")
+                            .message(e.getMessage())
+                            .build());
+        }
+    }
+
+    /**
+     * Update complete booking information
+     * PUT /api/v1/bookings/{bookingId}
+     * 
+     * @param bookingId Booking ID
+     * @param request Update request with member, PT, slot, and date information
+     * @return Updated booking details
+     */
+    @PutMapping("/{bookingId}")
+    @ApiMessage("Cập nhật thông tin lịch đặt")
+    @Operation(
+        summary = "Update booking information",
+        description = "Update complete booking information including member, personal trainer, time slot, and booking date. "
+                    + "Validates that PT is available at the selected slot on the specified date and has an active contract with the member."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Booking updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Validation error - invalid dates, unavailable PT, or no active contract"),
+            @ApiResponse(responseCode = "404", description = "Booking, member, personal trainer, or time slot not found")
+    })
+    public ResponseEntity<RestResponse<ResBookingDTO>> updateBooking(
+            @PathVariable Long bookingId,
+            @Valid @RequestBody ReqUpdateBookingDTO request) {
+
+        try {
+            ResBookingDTO updatedBooking = bookingService.updateBooking(bookingId, request);
+
+            return ResponseEntity.ok(
+                    RestResponse.<ResBookingDTO>builder()
+                            .statusCode(200)
+                            .message("Cập nhật lịch đặt thành công")
+                            .data(updatedBooking)
+                            .build());
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(RestResponse.<ResBookingDTO>builder()
+                            .statusCode(400)
+                            .error("VALIDATION_ERROR")
+                            .message(e.getMessage())
+                            .build());
+        } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(RestResponse.<ResBookingDTO>builder()
                             .statusCode(400)
