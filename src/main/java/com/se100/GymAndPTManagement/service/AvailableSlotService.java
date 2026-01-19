@@ -181,4 +181,17 @@ public class AvailableSlotService {
 
         return result;
     }
+
+    /**
+     * Get all available slots for the current logged-in PT user
+     * 
+     * @param ptId Personal Trainer ID of the logged-in user
+     * @return List of available slots for the PT
+     */
+    public List<ResAvailableSlotDTO> getMyAvailableSlots(Long ptId) {
+        List<AvailableSlot> availableSlots = availableSlotRepository.findByPersonalTrainerId(ptId);
+        return availableSlots.stream()
+                .map(ResAvailableSlotDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
 }

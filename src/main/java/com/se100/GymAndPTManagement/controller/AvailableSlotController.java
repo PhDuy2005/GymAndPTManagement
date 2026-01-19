@@ -17,12 +17,19 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateAvailableSlotDTO;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateAvailableSlotDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResAvailableSlotDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
+import com.se100.GymAndPTManagement.domain.responseDTO.RestResponse;
 import com.se100.GymAndPTManagement.domain.table.AvailableSlot;
+import com.se100.GymAndPTManagement.domain.table.PersonalTrainer;
+import com.se100.GymAndPTManagement.domain.table.User;
+import com.se100.GymAndPTManagement.repository.PersonalTrainerRepository;
+import com.se100.GymAndPTManagement.repository.UserRepository;
 import com.se100.GymAndPTManagement.service.AvailableSlotService;
 import com.se100.GymAndPTManagement.util.annotation.ApiMessage;
 import com.turkraft.springfilter.boot.Filter;
@@ -31,6 +38,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -43,9 +51,12 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/v1/available-slots")
 @RequiredArgsConstructor
+@Tag(name = "Available Slot Management", description = "APIs for managing personal trainer available time slots")
 public class AvailableSlotController {
 
     private final AvailableSlotService availableSlotService;
+    private final PersonalTrainerRepository personalTrainerRepository;
+    private final UserRepository userRepository;
     Logger logger = LoggerFactory.getLogger(AvailableSlotController.class);
 
     @Operation(summary = "Create new available slot")
@@ -77,6 +88,86 @@ public class AvailableSlotController {
         List<ResAvailableSlotDTO> slots = availableSlotService.getAllAvailableSlots();
         logger.info(">>AVAILABLE SLOT CONTROLLER: Retrieved all available slots, count: {}", slots.size());
         return ResponseEntity.ok(slots);
+    }
+
+    @Operation(
+        summary = "Get my available slots",
+        description = "Retrieve all available time slots for the currently authenticated personal trainer user. "
+                    + "Validates user authentication, confirms user exists in database, and verifies user has a PT profile. "
+                    + "Returns a list of all available slots assigned to this PT.\n\n"
+                    + "**Authentication Required:** Yes\n"
+                    + "**Authorization:** PT User (user must have PersonalTrainer profile)"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Success - returns available slots list for logged-in PT user"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - user not authenticated or user ID not found in database"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - authenticated user is not a personal trainer"),
+            @ApiResponse(responseCode = "500", description = "Internal server error during slot retrieval")
+    })
+    @GetMapping("/my-available-slots")
+    @ApiMessage("Get my available slots (for logged-in PT user)")
+    public ResponseEntity<?> getMyAvailableSlots() {
+        try {
+            // Get current authenticated user
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                logger.warn(">>AVAILABLE SLOT CONTROLLER: Unauthorized access to my-available-slots");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(RestResponse.builder()
+                                .statusCode(401)
+                                .message("User not authenticated")
+                                .build());
+            }
+
+            // Get user principal
+            User currentUser = (User) authentication.getPrincipal();
+            Long userId = currentUser.getId();
+            logger.info(">>AVAILABLE SLOT CONTROLLER: Getting available slots for user ID: {}", userId);
+
+            // Validate that user exists in the database
+            User existingUser = userRepository.findById(userId).orElse(null);
+            if (existingUser == null) {
+                logger.error(">>AVAILABLE SLOT CONTROLLER: User ID {} not found in database", userId);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(RestResponse.builder()
+                                .statusCode(401)
+                                .message("User not found in database")
+                                .build());
+            }
+
+            // Find PT profile for current user
+            PersonalTrainer pt = personalTrainerRepository.findByUserId(userId)
+                    .orElse(null);
+
+            if (pt == null) {
+                logger.warn(">>AVAILABLE SLOT CONTROLLER: PT profile not found for user: {}", userId);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(RestResponse.builder()
+                                .statusCode(403)
+                                .message("User is not a personal trainer")
+                                .build());
+            }
+
+            // Get all available slots for this PT
+            List<ResAvailableSlotDTO> slots = availableSlotService.getMyAvailableSlots(pt.getId());
+            logger.info(">>AVAILABLE SLOT CONTROLLER: Retrieved {} available slots for PT: {} (User: {})", 
+                    slots.size(), pt.getId(), userId);
+
+            return ResponseEntity.ok(
+                    RestResponse.builder()
+                            .statusCode(200)
+                            .message("Available slots retrieved successfully")
+                            .data(slots)
+                            .build());
+
+        } catch (Exception e) {
+            logger.error(">>AVAILABLE SLOT CONTROLLER: Error retrieving my available slots", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(RestResponse.builder()
+                            .statusCode(500)
+                            .message("Internal server error: " + e.getMessage())
+                            .build());
+        }
     }
 
     @Operation(summary = "Fetch available slots with filter and pagination")
