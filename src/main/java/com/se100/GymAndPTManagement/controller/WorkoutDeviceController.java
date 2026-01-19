@@ -3,8 +3,10 @@ package com.se100.GymAndPTManagement.controller;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,7 +51,8 @@ public class WorkoutDeviceController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "List of workout devices retrieved successfully")
     })
-    public ResponseEntity<ResultPaginationDTO> getAllWorkoutDevices(Pageable pageable) {
+    public ResponseEntity<ResultPaginationDTO> getAllWorkoutDevices(
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         ResultPaginationDTO result = workoutDeviceService.handleFetchWorkoutDevices(null, pageable);
         return ResponseEntity.ok(result);
     }
@@ -98,20 +101,20 @@ public class WorkoutDeviceController {
     })
     public ResponseEntity<ResultPaginationDTO> getWorkoutDevicesByType(
             @RequestParam("type") String type,
-            Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         ResultPaginationDTO result = workoutDeviceService.getWorkoutDevicesByType(type, pageable);
         return ResponseEntity.ok(result);
     }
 
     @GetMapping("/maintenance-required")
-    @ApiMessage("Lấy danh sách thiết bị cần bảo trì")
+    @ApiMessage("Lấy danh sách thiết bị cần bảo trí")
     @Operation(summary = "Get devices requiring maintenance", description = "Retrieve devices that require maintenance before or on specified date")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "List of devices requiring maintenance retrieved successfully")
     })
     public ResponseEntity<ResultPaginationDTO> getDevicesRequiringMaintenance(
             @RequestParam("beforeDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate beforeDate,
-            Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         ResultPaginationDTO result = workoutDeviceService.getDevicesRequiringMaintenance(beforeDate, pageable);
         return ResponseEntity.ok(result);
     }
@@ -124,7 +127,7 @@ public class WorkoutDeviceController {
     })
     public ResponseEntity<ResultPaginationDTO> getDevicesImportedAfter(
             @RequestParam("afterDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate afterDate,
-            Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         ResultPaginationDTO result = workoutDeviceService.getDevicesImportedAfter(afterDate, pageable);
         return ResponseEntity.ok(result);
     }

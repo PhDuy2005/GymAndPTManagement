@@ -1,6 +1,8 @@
 package com.se100.GymAndPTManagement.controller;
 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -44,7 +46,8 @@ public class WorkoutController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "List of workouts retrieved successfully")
     })
-    public ResponseEntity<ResultPaginationDTO> getAllWorkouts(Pageable pageable) {
+    public ResponseEntity<ResultPaginationDTO> getAllWorkouts(
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         ResultPaginationDTO result = workoutService.handleFetchWorkouts(null, pageable);
         return ResponseEntity.ok(result);
     }
@@ -93,7 +96,7 @@ public class WorkoutController {
     })
     public ResponseEntity<ResultPaginationDTO> searchWorkoutsByName(
             @RequestParam String name,
-            Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         ResultPaginationDTO result = workoutService.searchWorkoutsByName(name, pageable);
         return ResponseEntity.ok(result);
     }
@@ -106,7 +109,7 @@ public class WorkoutController {
     })
     public ResponseEntity<ResultPaginationDTO> getWorkoutsByDifficulty(
             @PathVariable("difficulty") WorkoutDifficultyEnum difficulty,
-            Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         ResultPaginationDTO result = workoutService.getWorkoutsByDifficulty(difficulty, pageable);
         return ResponseEntity.ok(result);
     }
@@ -119,7 +122,7 @@ public class WorkoutController {
     })
     public ResponseEntity<ResultPaginationDTO> getWorkoutsByType(
             @RequestParam("type") String type,
-            Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         ResultPaginationDTO result = workoutService.getWorkoutsByType(type, pageable);
         return ResponseEntity.ok(result);
     }
@@ -132,7 +135,7 @@ public class WorkoutController {
     })
     public ResponseEntity<ResultPaginationDTO> searchWorkoutsByType(
             @RequestParam("type") String type,
-            Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         ResultPaginationDTO result = workoutService.searchWorkoutsByType(type, pageable);
         return ResponseEntity.ok(result);
     }

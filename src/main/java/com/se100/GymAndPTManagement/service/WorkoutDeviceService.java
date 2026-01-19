@@ -125,7 +125,7 @@ public class WorkoutDeviceService {
                 .collect(Collectors.toList());
 
         ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
-        meta.setPage(page.getNumber() + 1);
+        meta.setPage(page.getNumber());
         meta.setPageSize(page.getSize());
         meta.setTotalPages(page.getTotalPages());
         meta.setTotalItems(page.getTotalElements());
@@ -149,7 +149,7 @@ public class WorkoutDeviceService {
                 .collect(Collectors.toList());
 
         ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
-        meta.setPage(page.getNumber() + 1);
+        meta.setPage(page.getNumber());
         meta.setPageSize(page.getSize());
         meta.setTotalPages(page.getTotalPages());
         meta.setTotalItems(page.getTotalElements());
@@ -173,7 +173,7 @@ public class WorkoutDeviceService {
                 .collect(Collectors.toList());
 
         ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
-        meta.setPage(page.getNumber() + 1);
+        meta.setPage(page.getNumber());
         meta.setPageSize(page.getSize());
         meta.setTotalPages(page.getTotalPages());
         meta.setTotalItems(page.getTotalElements());
@@ -197,7 +197,7 @@ public class WorkoutDeviceService {
                 .collect(Collectors.toList());
 
         ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
-        meta.setPage(page.getNumber() + 1);
+        meta.setPage(page.getNumber());
         meta.setPageSize(page.getSize());
         meta.setTotalPages(page.getTotalPages());
         meta.setTotalItems(page.getTotalElements());
