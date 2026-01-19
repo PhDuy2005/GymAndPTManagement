@@ -22,7 +22,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateAvailableSlotDTO;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateAvailableSlotDTO;
+import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateAvailableSlotByUserDTO;
+import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateAvailableSlotForCurrentUserDTO;
+import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateAvailableSlotByUserDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResAvailableSlotDTO;
+import com.se100.GymAndPTManagement.domain.responseDTO.ResAvailableSlotByUserDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.RestResponse;
 import com.se100.GymAndPTManagement.domain.table.AvailableSlot;
@@ -32,6 +36,7 @@ import com.se100.GymAndPTManagement.repository.PersonalTrainerRepository;
 import com.se100.GymAndPTManagement.repository.UserRepository;
 import com.se100.GymAndPTManagement.service.AvailableSlotService;
 import com.se100.GymAndPTManagement.util.annotation.ApiMessage;
+import com.se100.GymAndPTManagement.util.error.IdInvalidException;
 import com.turkraft.springfilter.boot.Filter;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -240,10 +245,16 @@ public class AvailableSlotController {
     @ApiMessage("Get all available slots by status") // approved
     public ResponseEntity<List<ResAvailableSlotDTO>> getAllAvailableSlotsByStatus(
             @PathVariable("isAvailable") Boolean isAvailable) {
-        List<ResAvailableSlotDTO> slots = availableSlotService.getAllAvailableSlotsByStatus(isAvailable);
-        logger.info(">>AVAILABLE SLOT CONTROLLER: Retrieved available slots with status: {}, count: {}", isAvailable,
-                slots.size());
-        return ResponseEntity.ok(slots);
+        try {
+            List<ResAvailableSlotDTO> slots = availableSlotService.getAllAvailableSlotsByStatus(isAvailable);
+            logger.info(">>AVAILABLE SLOT CONTROLLER: Retrieved available slots with status: {}, count: {}", isAvailable,
+                    slots.size());
+            return ResponseEntity.ok(slots);
+        } catch (Exception e) {
+            logger.error(">>AVAILABLE SLOT CONTROLLER: Error retrieving slots by status: {}", isAvailable, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new java.util.ArrayList<>());
+        }
     }
 
     @Operation(summary = "Update available slot")
@@ -321,6 +332,159 @@ public class AvailableSlotController {
         ResAvailableSlotDTO updated = availableSlotService.setAvailableBySlotPtDay(slotId, ptId, dayOfWeek);
         logger.info(">>AVAILABLE SLOT CONTROLLER: Set available for slotId: {}, ptId: {}, dayOfWeek: {}",
                 slotId, ptId, dayOfWeek);
+        return ResponseEntity.ok(updated);
+    }
+
+    // ==================== USER-BASED AVAILABLE SLOT ENDPOINTS ====================
+
+    @Operation(summary = "Create new available slot by user ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Available slot created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "404", description = "User or Slot not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    @PostMapping("/user")
+    @ApiMessage("Create new available slot by user ID")
+    public ResponseEntity<ResAvailableSlotByUserDTO> createAvailableSlotByUser(
+            @Valid @RequestBody ReqCreateAvailableSlotByUserDTO request) {
+        logger.info(">>AVAILABLE SLOT CONTROLLER: Creating new available slot for User: {}, Slot: {}, Day: {}",
+                request.getUserId(), request.getSlotId(), request.getDayOfWeek());
+        ResAvailableSlotByUserDTO created = availableSlotService.createAvailableSlotByUser(request);
+        logger.info(">>AVAILABLE SLOT CONTROLLER: Created available slot with ID: {} for User: {}", created.getId(), request.getUserId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @Operation(
+        summary = "Create new available slot for current logged-in user",
+        description = "Create a new available time slot for the currently authenticated user. "
+                    + "The slot will be assigned to the logged-in user's PT profile if they are a personal trainer. "
+                    + "Requires authentication and validates that the requested slot exists.\n\n"
+                    + "**Authentication Required:** Yes\n"
+                    + "**Request Body:** slotId and dayOfWeek"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Available slot created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "404", description = "Slot not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - user not authenticated or not found in database")
+    })
+    @PostMapping("/user/my-slot")
+    @ApiMessage("Create new available slot for current logged-in user")
+    public ResponseEntity<?> createAvailableSlotForCurrentUser(
+            @Valid @RequestBody ReqCreateAvailableSlotForCurrentUserDTO request) {
+        try {
+            // Verify user is authenticated
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                logger.warn(">>AVAILABLE SLOT CONTROLLER: Unauthorized access to create my-slot");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(RestResponse.builder()
+                                .statusCode(401)
+                                .message("User not authenticated")
+                                .build());
+            }
+
+            logger.info(">>AVAILABLE SLOT CONTROLLER: Creating new available slot for current user, Slot: {}, Day: {}",
+                    request.getSlotId(), request.getDayOfWeek());
+            ResAvailableSlotByUserDTO created = availableSlotService.createAvailableSlotForCurrentUser(request);
+            logger.info(">>AVAILABLE SLOT CONTROLLER: Created available slot with ID: {}", created.getId());
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (IdInvalidException e) {
+            logger.error(">>AVAILABLE SLOT CONTROLLER: Invalid data - {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(RestResponse.builder()
+                            .statusCode(401)
+                            .message(e.getMessage())
+                            .build());
+        } catch (Exception e) {
+            logger.error(">>AVAILABLE SLOT CONTROLLER: Error creating available slot for current user", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(RestResponse.builder()
+                            .statusCode(500)
+                            .message("Internal server error: " + e.getMessage())
+                            .build());
+        }
+    }
+
+    @Operation(summary = "Get all available slots by user ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    @GetMapping("/user/{userId}")
+    @ApiMessage("Get all available slots by user ID")
+    public ResponseEntity<List<ResAvailableSlotByUserDTO>> getAvailableSlotsByUserId(
+            @PathVariable("userId") Long userId) {
+        List<ResAvailableSlotByUserDTO> slots = availableSlotService.getAllAvailableSlotsByUserId(userId);
+        logger.info(">>AVAILABLE SLOT CONTROLLER: Retrieved available slots for User: {}, count: {}", userId, slots.size());
+        return ResponseEntity.ok(slots);
+    }
+
+    @Operation(summary = "Get available slots by user ID (only available)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    @GetMapping("/user/{userId}/available")
+    @ApiMessage("Get available slots by user ID (only available)")
+    public ResponseEntity<List<ResAvailableSlotByUserDTO>> getAvailableSlotsByUserIdAndAvailable(
+            @PathVariable("userId") Long userId) {
+        List<ResAvailableSlotByUserDTO> slots = availableSlotService.getAvailableSlotsByUserIdAndAvailable(userId);
+        logger.info(">>AVAILABLE SLOT CONTROLLER: Retrieved available slots (available only) for User: {}, count: {}",
+                userId, slots.size());
+        return ResponseEntity.ok(slots);
+    }
+
+    @Operation(summary = "Update available slot by user ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Available slot updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Available slot or Slot not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    @PutMapping("/user/{availableSlotId}")
+    @ApiMessage("Update available slot by user ID")
+    public ResponseEntity<ResAvailableSlotByUserDTO> updateAvailableSlotByUser(
+            @PathVariable("availableSlotId") Long availableSlotId,
+            @Valid @RequestBody ReqUpdateAvailableSlotByUserDTO request) {
+        ResAvailableSlotByUserDTO updated = availableSlotService.updateAvailableSlotByUser(availableSlotId, request);
+        logger.info(">>AVAILABLE SLOT CONTROLLER: Updated available slot with ID: {}", availableSlotId);
+        return ResponseEntity.ok(updated);
+    }
+
+    @Operation(summary = "Delete available slot by user ID (soft delete)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Available slot deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Available slot not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    @DeleteMapping("/user/{availableSlotId}")
+    @ApiMessage("Delete available slot by user ID")
+    public ResponseEntity<Void> deleteAvailableSlotByUser(@PathVariable("availableSlotId") Long availableSlotId) {
+        availableSlotService.deleteAvailableSlotByUser(availableSlotId);
+        logger.info(">>AVAILABLE SLOT CONTROLLER: Deleted available slot with ID: {}", availableSlotId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @Operation(summary = "Set available by slotId, userId and dayOfWeek. dayOfWeek could be written in any case (e.g., MONDAY, monday, Monday)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Available slot set as available successfully"),
+            @ApiResponse(responseCode = "404", description = "Available slot, User or Slot not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid day of week"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    @PutMapping("/user/set-available/slot/{slotId}/user/{userId}/day/{dayOfWeek}")
+    @ApiMessage("Set available by slotId, userId and dayOfWeek")
+    public ResponseEntity<ResAvailableSlotByUserDTO> setAvailableBySlotUserDay(
+            @PathVariable("slotId") Long slotId,
+            @PathVariable("userId") Long userId,
+            @PathVariable("dayOfWeek") String dayOfWeek) {
+        ResAvailableSlotByUserDTO updated = availableSlotService.setAvailableBySlotUserDay(slotId, userId, dayOfWeek);
+        logger.info(">>AVAILABLE SLOT CONTROLLER: Set available for slotId: {}, userId: {}, dayOfWeek: {}",
+                slotId, userId, dayOfWeek);
         return ResponseEntity.ok(updated);
     }
 }
