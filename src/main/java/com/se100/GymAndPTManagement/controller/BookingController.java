@@ -6,6 +6,7 @@
  */
 package com.se100.GymAndPTManagement.controller;
 
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,7 +42,7 @@ public class BookingController {
      */
     @GetMapping
     @ApiMessage("Lấy danh sách tất cả lịch đặt")
-    public ResponseEntity<ResultPaginationDTO> getAllBookings(Pageable pageable) {
+    public ResponseEntity<ResultPaginationDTO> getAllBookings(@ParameterObject Pageable pageable) {
 
         ResultPaginationDTO result = bookingService.getAllBookings(pageable);
 
@@ -136,7 +137,7 @@ public class BookingController {
     @ApiMessage("Lấy danh sách lịch đặt của thành viên")
     public ResponseEntity<ResultPaginationDTO> getBookingsByMember(
             @PathVariable Long memberId,
-            Pageable pageable) {
+            @ParameterObject Pageable pageable) {
 
         ResultPaginationDTO result = bookingService.getBookingsByMember(memberId, pageable);
 
@@ -154,7 +155,7 @@ public class BookingController {
     @ApiMessage("Lấy danh sách lịch đặt của PT")
     public ResponseEntity<ResultPaginationDTO> getBookingsByPT(
             @PathVariable Long ptId,
-            Pageable pageable) {
+            @ParameterObject Pageable pageable) {
 
         ResultPaginationDTO result = bookingService.getBookingsByPT(ptId, pageable);
 
