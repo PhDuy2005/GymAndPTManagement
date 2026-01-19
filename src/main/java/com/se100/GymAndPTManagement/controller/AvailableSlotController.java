@@ -119,21 +119,22 @@ public class AvailableSlotController {
                                 .build());
             }
 
-            // Get user principal
-            User currentUser = (User) authentication.getPrincipal();
-            Long userId = currentUser.getId();
-            logger.info(">>AVAILABLE SLOT CONTROLLER: Getting available slots for user ID: {}", userId);
+            // Get username from authentication principal
+            String username = authentication.getName();
+            logger.info(">>AVAILABLE SLOT CONTROLLER: Getting available slots for username: {}", username);
 
-            // Validate that user exists in the database
-            User existingUser = userRepository.findById(userId).orElse(null);
-            if (existingUser == null) {
-                logger.error(">>AVAILABLE SLOT CONTROLLER: User ID {} not found in database", userId);
+            // Find user by email (username)
+            User currentUser = userRepository.findByEmail(username).orElse(null);
+            if (currentUser == null) {
+                logger.error(">>AVAILABLE SLOT CONTROLLER: User with email {} not found in database", username);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(RestResponse.builder()
                                 .statusCode(401)
                                 .message("User not found in database")
                                 .build());
             }
+            Long userId = currentUser.getId();
+            logger.info(">>AVAILABLE SLOT CONTROLLER: Found user ID: {} for username: {}", userId, username);
 
             // Find PT profile for current user
             PersonalTrainer pt = personalTrainerRepository.findByUserId(userId)
