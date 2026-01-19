@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateDailyDietDTO;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateDailyDietDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResDailyDietDTO;
+import com.se100.GymAndPTManagement.domain.responseDTO.ResDailyDietBasicDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResDietDetailDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
 import com.se100.GymAndPTManagement.domain.table.DailyDiet;
@@ -130,6 +131,24 @@ public class DailyDietService {
                                 .build();
         }
 
+        private ResDailyDietBasicDTO convertToBasicDTO(DailyDiet dailyDiet) {
+                return ResDailyDietBasicDTO.builder()
+                                .id(dailyDiet.getId())
+                                .memberId(dailyDiet.getMember().getId())
+                                .memberName(dailyDiet.getMember().getUser().getFullname())
+                                .ptId(dailyDiet.getPersonalTrainer() != null ? dailyDiet.getPersonalTrainer().getId()
+                                                : null)
+                                .ptName(dailyDiet.getPersonalTrainer() != null
+                                                ? dailyDiet.getPersonalTrainer().getUser().getFullname()
+                                                : null)
+                                .dietDate(dailyDiet.getDietDate())
+                                .waterLiters(dailyDiet.getWaterLiters())
+                                .note(dailyDiet.getNote())
+                                .createdAt(dailyDiet.getCreatedAt())
+                                .updatedAt(dailyDiet.getUpdatedAt())
+                                .build();
+        }
+
         // =========================================
         // CRUD Methods
         // =========================================
@@ -201,6 +220,32 @@ public class DailyDietService {
                                 });
 
                 return convertToDTO(dailyDiet);
+        }
+
+        /**
+         * Get all daily diets (basic info without diet details)
+         * 
+         * @param pageable Pagination info
+         * @return Paginated result with basic diet info
+         */
+        public ResultPaginationDTO getAllDailyDietsBasic(Pageable pageable) {
+                Page<DailyDiet> dietPage = dailyDietRepository.findAll(pageable);
+
+                List<ResDailyDietBasicDTO> diets = dietPage.getContent().stream()
+                                .map(this::convertToBasicDTO)
+                                .collect(Collectors.toList());
+
+                ResultPaginationDTO.Meta meta = ResultPaginationDTO.Meta.builder()
+                                .page(pageable.getPageNumber() + 1)
+                                .pageSize(pageable.getPageSize())
+                                .totalPages(dietPage.getTotalPages())
+                                .totalItems(dietPage.getTotalElements())
+                                .build();
+
+                ResultPaginationDTO result = new ResultPaginationDTO();
+                result.setMeta(meta);
+                result.setResult(diets);
+                return result;
         }
 
         /**

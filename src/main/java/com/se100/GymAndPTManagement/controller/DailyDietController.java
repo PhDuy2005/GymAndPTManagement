@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateDailyDietDTO;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateDailyDietDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResDailyDietDTO;
+import com.se100.GymAndPTManagement.domain.responseDTO.ResDailyDietBasicDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
 import com.se100.GymAndPTManagement.domain.table.DailyDiet;
 import com.se100.GymAndPTManagement.service.DailyDietService;
@@ -31,6 +33,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 /**
@@ -41,6 +44,7 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/api/v1/daily-diets")
+@Tag(name = "Daily Diet Management", description = "APIs for managing daily nutrition diets and details")
 public class DailyDietController {
 
     private final DailyDietService dailyDietService;
@@ -49,6 +53,7 @@ public class DailyDietController {
         this.dailyDietService = dailyDietService;
     }
 
+    @PostMapping
     @Operation(summary = "Create new daily diet")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Daily diet created successfully"),
@@ -56,11 +61,25 @@ public class DailyDietController {
             @ApiResponse(responseCode = "404", description = "Member or PT not found"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    @PostMapping
     @ApiMessage("Tạo thực đơn hàng ngày mới")
     public ResponseEntity<ResDailyDietDTO> createDailyDiet(@Valid @RequestBody ReqCreateDailyDietDTO request) {
         ResDailyDietDTO diet = dailyDietService.createDailyDiet(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(diet);
+    }
+
+    @GetMapping
+    @Operation(summary = "Get all daily diets (basic info only)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    @ApiMessage("Lấy danh sách tất cả thực đơn (không kèm chi tiết)")
+    public ResponseEntity<ResultPaginationDTO> getAllDailyDiets(
+            @ParameterObject
+            @PageableDefault(size = 10, page = 0)
+            Pageable pageable) {
+        ResultPaginationDTO result = dailyDietService.getAllDailyDietsBasic(pageable);
+        return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "Get daily diet by ID")
