@@ -10,7 +10,11 @@ import org.springframework.stereotype.Service;
 
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateAvailableSlotDTO;
 import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateAvailableSlotDTO;
+import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateAvailableSlotByUserDTO;
+import com.se100.GymAndPTManagement.domain.requestDTO.ReqCreateAvailableSlotForCurrentUserDTO;
+import com.se100.GymAndPTManagement.domain.requestDTO.ReqUpdateAvailableSlotByUserDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResAvailableSlotDTO;
+import com.se100.GymAndPTManagement.domain.responseDTO.ResAvailableSlotByUserDTO;
 import com.se100.GymAndPTManagement.domain.responseDTO.ResultPaginationDTO;
 import com.se100.GymAndPTManagement.domain.table.AvailableSlot;
 import com.se100.GymAndPTManagement.domain.table.PersonalTrainer;
@@ -18,8 +22,10 @@ import com.se100.GymAndPTManagement.domain.table.Slot;
 import com.se100.GymAndPTManagement.repository.AvailableSlotRepository;
 import com.se100.GymAndPTManagement.repository.PersonalTrainerRepository;
 import com.se100.GymAndPTManagement.repository.SlotRepository;
+import com.se100.GymAndPTManagement.repository.UserRepository;
 import com.se100.GymAndPTManagement.util.enums.DayOfWeekEnum;
 import com.se100.GymAndPTManagement.util.error.IdInvalidException;
+import com.se100.GymAndPTManagement.util.SecurityUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,8 +42,15 @@ public class AvailableSlotService {
     private final AvailableSlotRepository availableSlotRepository;
     private final PersonalTrainerRepository personalTrainerRepository;
     private final SlotRepository slotRepository;
+    private final UserRepository userRepository;
 
     public ResAvailableSlotDTO createAvailableSlot(ReqCreateAvailableSlotDTO request) {
+        // Get current logged-in user
+        String username = SecurityUtil.getCurrentUserLogin()
+                .orElseThrow(() -> new IdInvalidException("User not authenticated"));
+        com.se100.GymAndPTManagement.domain.table.User currentUser = userRepository.findByEmail(username)
+                .orElseThrow(() -> new IdInvalidException("Current user not found in database"));
+
         // Validate PT exists
         PersonalTrainer pt = personalTrainerRepository.findById(request.getPtId())
                 .orElseThrow(() -> new IdInvalidException("Personal trainer not found with id: " + request.getPtId()));
@@ -48,6 +61,7 @@ public class AvailableSlotService {
 
         AvailableSlot availableSlot = AvailableSlot.builder()
                 .personalTrainer(pt)
+                .user(currentUser)  // Store user_id of logged-in user
                 .slot(slot)
                 .dayOfWeek(request.getDayOfWeek())
                 .isAvailable(true)
@@ -193,5 +207,153 @@ public class AvailableSlotService {
         return availableSlots.stream()
                 .map(ResAvailableSlotDTO::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    // ==================== USER-BASED AVAILABLE SLOT CRUD METHODS ====================
+
+    /**
+     * Create available slot by user ID - directly use user_id, and pt_id if user is a PT
+     */
+    public ResAvailableSlotByUserDTO createAvailableSlotByUser(ReqCreateAvailableSlotByUserDTO request) {
+        // Validate User exists
+        com.se100.GymAndPTManagement.domain.table.User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new IdInvalidException("User not found with id: " + request.getUserId()));
+
+        // Validate Slot exists
+        Slot slot = slotRepository.findById(request.getSlotId())
+                .orElseThrow(() -> new IdInvalidException("Slot not found with id: " + request.getSlotId()));
+
+        // Try to get PT profile if user is a PT
+        PersonalTrainer pt = personalTrainerRepository.findByUserId(user.getId()).orElse(null);
+
+        AvailableSlot availableSlot = AvailableSlot.builder()
+                .user(user)  // Store user_id from request
+                .personalTrainer(pt)  // Store pt_id if user is a PT, otherwise null
+                .slot(slot)
+                .dayOfWeek(request.getDayOfWeek())
+                .isAvailable(true)
+                .build();
+
+        AvailableSlot savedAvailableSlot = availableSlotRepository.save(availableSlot);
+        return ResAvailableSlotByUserDTO.fromEntity(savedAvailableSlot);
+    }
+
+    /**
+     * Create available slot for current logged-in user (using new DTO without userId)
+     */
+    public ResAvailableSlotByUserDTO createAvailableSlotForCurrentUser(ReqCreateAvailableSlotForCurrentUserDTO request) {
+        // Get current logged-in user
+        String username = SecurityUtil.getCurrentUserLogin()
+                .orElseThrow(() -> new IdInvalidException("User not authenticated"));
+        com.se100.GymAndPTManagement.domain.table.User currentUser = userRepository.findByEmail(username)
+                .orElseThrow(() -> new IdInvalidException("Current user not found in database"));
+
+        // Validate Slot exists
+        Slot slot = slotRepository.findById(request.getSlotId())
+                .orElseThrow(() -> new IdInvalidException("Slot not found with id: " + request.getSlotId()));
+
+        // Try to get PT profile if user is a PT
+        PersonalTrainer pt = personalTrainerRepository.findByUserId(currentUser.getId()).orElse(null);
+
+        AvailableSlot availableSlot = AvailableSlot.builder()
+                .user(currentUser)  // Store user_id of logged-in user
+                .personalTrainer(pt)  // Store pt_id if user is a PT, otherwise null
+                .slot(slot)
+                .dayOfWeek(request.getDayOfWeek())
+                .isAvailable(true)
+                .build();
+
+        AvailableSlot savedAvailableSlot = availableSlotRepository.save(availableSlot);
+        return ResAvailableSlotByUserDTO.fromEntity(savedAvailableSlot);
+    }
+
+    /**
+     * Get all available slots by user ID
+     */
+    public List<ResAvailableSlotByUserDTO> getAllAvailableSlotsByUserId(Long userId) {
+        // Validate User exists
+        if (!userRepository.existsById(userId)) {
+            throw new IdInvalidException("User not found with id: " + userId);
+        }
+
+        return availableSlotRepository.findByUserId(userId).stream()
+                .map(ResAvailableSlotByUserDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get all available slots by user ID (only available slots)
+     */
+    public List<ResAvailableSlotByUserDTO> getAvailableSlotsByUserIdAndAvailable(Long userId) {
+        // Validate User exists
+        if (!userRepository.existsById(userId)) {
+            throw new IdInvalidException("User not found with id: " + userId);
+        }
+
+        return availableSlotRepository.findByUserIdAndIsAvailable(userId, true).stream()
+                .map(ResAvailableSlotByUserDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Update available slot by user ID
+     */
+    public ResAvailableSlotByUserDTO updateAvailableSlotByUser(Long id, ReqUpdateAvailableSlotByUserDTO request) {
+        AvailableSlot availableSlot = availableSlotRepository.findById(id)
+                .orElseThrow(() -> new IdInvalidException("Available slot not found with id: " + id));
+
+        // Validate Slot exists
+        Slot slot = slotRepository.findById(request.getSlotId())
+                .orElseThrow(() -> new IdInvalidException("Slot not found with id: " + request.getSlotId()));
+
+        availableSlot.setSlot(slot);
+        availableSlot.setDayOfWeek(request.getDayOfWeek());
+
+        AvailableSlot updatedAvailableSlot = availableSlotRepository.save(availableSlot);
+        return ResAvailableSlotByUserDTO.fromEntity(updatedAvailableSlot);
+    }
+
+    /**
+     * Delete available slot by user ID (set isAvailable to false)
+     */
+    public void deleteAvailableSlotByUser(Long id) {
+        AvailableSlot availableSlot = availableSlotRepository.findById(id)
+                .orElseThrow(() -> new IdInvalidException("Available slot not found with id: " + id));
+        availableSlot.setIsAvailable(false);
+        availableSlotRepository.save(availableSlot);
+    }
+
+    /**
+     * Set available status by slot, user, and day of week
+     */
+    public ResAvailableSlotByUserDTO setAvailableBySlotUserDay(Long slotId, Long userId, String dayOfWeekStr) {
+        // Parse dayOfWeek string to enum
+        DayOfWeekEnum dayOfWeek;
+        try {
+            dayOfWeek = DayOfWeekEnum.valueOf(dayOfWeekStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid day of week: " + dayOfWeekStr);
+        }
+
+        // Validate User exists
+        if (!userRepository.existsById(userId)) {
+            throw new IdInvalidException("User not found with id: " + userId);
+        }
+
+        // Validate Slot exists
+        if (!slotRepository.existsById(slotId)) {
+            throw new IdInvalidException("Slot not found with id: " + slotId);
+        }
+
+        // Find available slot by slotId, userId, dayOfWeek
+        AvailableSlot availableSlot = availableSlotRepository
+                .findBySlotIdAndUserIdAndDayOfWeek(slotId, userId, dayOfWeek)
+                .orElseThrow(() -> new IdInvalidException(
+                        String.format("Available slot not found with slotId: %d, userId: %d, dayOfWeek: %s",
+                                slotId, userId, dayOfWeekStr)));
+
+        availableSlot.setIsAvailable(true);
+        AvailableSlot updated = availableSlotRepository.save(availableSlot);
+        return ResAvailableSlotByUserDTO.fromEntity(updated);
     }
 }

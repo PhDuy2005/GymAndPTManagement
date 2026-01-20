@@ -199,30 +199,30 @@ INSERT INTO slots (slot_id, slot_name, start_time, end_time, is_active, created_
 -- ============================================
 -- 10. AVAILABLE SLOTS (PT Availability)
 -- ============================================
--- PT 1 (Trần Minh) - Available morning slots
-INSERT INTO available_slots (available_slot_id, pt_id, slot_id, day_of_week, is_available, created_at, created_by, updated_at, updated_by) VALUES
-(1, 1, 1, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
-(2, 1, 2, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
-(3, 1, 3, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
-(4, 1, 1, 'WEDNESDAY', 1, NOW(), 'system', NOW(), 'system'),
-(5, 1, 2, 'WEDNESDAY', 1, NOW(), 'system', NOW(), 'system'),
-(6, 1, 1, 'FRIDAY', 1, NOW(), 'system', NOW(), 'system'),
+-- PT 1 (Trần Minh PT - user_id: 2) - Available morning slots
+INSERT INTO available_slots (available_slot_id, pt_id, user_id, slot_id, day_of_week, is_available, created_at, created_by, updated_at, updated_by) VALUES
+(1, 1, 2, 1, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
+(2, 1, 2, 2, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
+(3, 1, 2, 3, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
+(4, 1, 2, 1, 'WEDNESDAY', 1, NOW(), 'system', NOW(), 'system'),
+(5, 1, 2, 2, 'WEDNESDAY', 1, NOW(), 'system', NOW(), 'system'),
+(6, 1, 2, 1, 'FRIDAY', 1, NOW(), 'system', NOW(), 'system'),
 
--- PT 2 (Lê Thị) - Available afternoon slots
-(7, 2, 6, 'TUESDAY', 1, NOW(), 'system', NOW(), 'system'),
-(8, 2, 7, 'TUESDAY', 1, NOW(), 'system', NOW(), 'system'),
-(9, 2, 8, 'TUESDAY', 1, NOW(), 'system', NOW(), 'system'),
-(10, 2, 6, 'THURSDAY', 1, NOW(), 'system', NOW(), 'system'),
-(11, 2, 7, 'THURSDAY', 1, NOW(), 'system', NOW(), 'system'),
-(12, 2, 6, 'SATURDAY', 1, NOW(), 'system', NOW(), 'system'),
+-- PT 2 (Lê Thị PT - user_id: 3) - Available afternoon slots
+(7, 2, 3, 6, 'TUESDAY', 1, NOW(), 'system', NOW(), 'system'),
+(8, 2, 3, 7, 'TUESDAY', 1, NOW(), 'system', NOW(), 'system'),
+(9, 2, 3, 8, 'TUESDAY', 1, NOW(), 'system', NOW(), 'system'),
+(10, 2, 3, 6, 'THURSDAY', 1, NOW(), 'system', NOW(), 'system'),
+(11, 2, 3, 7, 'THURSDAY', 1, NOW(), 'system', NOW(), 'system'),
+(12, 2, 3, 6, 'SATURDAY', 1, NOW(), 'system', NOW(), 'system'),
 
--- PT 3 (Phạm Văn) - Available evening slots
-(13, 3, 9, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
-(14, 3, 10, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
-(15, 3, 11, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
-(16, 3, 9, 'WEDNESDAY', 1, NOW(), 'system', NOW(), 'system'),
-(17, 3, 10, 'WEDNESDAY', 1, NOW(), 'system', NOW(), 'system'),
-(18, 3, 9, 'FRIDAY', 1, NOW(), 'system', NOW(), 'system');
+-- PT 3 (Phạm Văn PT - user_id: 4) - Available evening slots
+(13, 3, 4, 9, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
+(14, 3, 4, 10, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
+(15, 3, 4, 11, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
+(16, 3, 4, 9, 'WEDNESDAY', 1, NOW(), 'system', NOW(), 'system'),
+(17, 3, 4, 10, 'WEDNESDAY', 1, NOW(), 'system', NOW(), 'system'),
+(18, 3, 4, 9, 'FRIDAY', 1, NOW(), 'system', NOW(), 'system');
 
 -- ============================================
 -- 11. BODY METRICS (Member Health Tracking)

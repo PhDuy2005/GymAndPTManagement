@@ -30,4 +30,12 @@ public interface AvailableSlotRepository
 
     List<AvailableSlot> findBySlotIdAndDayOfWeekAndIsAvailable(Long slotId, DayOfWeekEnum dayOfWeek,
             Boolean isAvailable);
+
+    // New methods for user-based available slots
+    List<AvailableSlot> findByUserId(Long userId);
+
+    List<AvailableSlot> findByUserIdAndIsAvailable(Long userId, Boolean isAvailable);
+
+    Optional<AvailableSlot> findBySlotIdAndUserIdAndDayOfWeek(Long slotId, Long userId,
+            DayOfWeekEnum dayOfWeek);
 }

@@ -41,8 +41,12 @@ public class AvailableSlot {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "pt_id", nullable = false)
+    @JoinColumn(name = "pt_id", nullable = true)
     private PersonalTrainer personalTrainer;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "slot_id", nullable = false)
