@@ -1,3 +1,38 @@
+<p align="center">
+  <a href="https://www.uit.edu.vn/" title="Trường Đại học Công nghệ Thông tin" style="border: 5;">
+    <img src="https://i.imgur.com/WmMnSRt.png" alt="Trường Đại học Công nghệ Thông tin | University of Information Technology">
+  </a>
+</p>
+
+<!-- Title -->
+<h1 align="center"><b>SE100 - PHƯƠNG PHÁP PHÁT TRIỂN PHẦN MỀM HƯỚNG ĐỐI TƯỢNG</b></h1>
+
+## GIỚI THIỆU MÔN HỌC
+<a name="gioithieumonhoc"></a>
+* **Tên môn học**: Phương pháp Phát triển phần mềm hướng đối tượng - Object-oriented software development methodology
+* **Mã môn học**: SE100
+* **Năm học**: 2025-2026
+
+## GIẢNG VIÊN HƯỚNG DẪN
+<a name="giangvien"></a>
+* ThS. **Huỳnh Hồ Thị Mộng Trinh**
+
+## THÀNH VIÊN NHÓM
+<a name="thanhvien"></a>
+| STT |   MSSV   |            Họ và Tên |                                                        Github |                  Email |
+| --- | :------: | -------------------: | ------------------------------------------------------------: | ---------------------: |
+| 1   | 23520540 |      Tăng Minh Hoàng |                       [Hoangfff](https://github.com/Hoangfff) | 23520540@gm.uit.edu.vn |
+| 2   | 23520689 |      Lê Nguyên Khang |                             [KStuv](https://github.com/KStuv) | 23520689@gm.uit.edu.vn |
+| 3   | 23520243 |    Nguyễn Thành Danh | [NguyenThanhDanh1678](https://github.com/NguyenThanhDanh1678) | 23520243@gm.uit.edu.vn |
+| 4   | 23520384 |  Phạm Trần Khánh Duy |                     [PhDuy2005](https://github.com/PhDuy2005) | 23520384@gm.uit.edu.vn |
+| 5   | 22520072 | Phan Nguyễn Tuấn Anh |     [PhanNguyenTuanAnh](https://github.com/PhanNguyenTuanAnh) | 22520072@gm.uit.edu.vn |
+
+## PROJECT LIÊN QUAN
+<a name="projectlienquan"></a>
+* **Frontend Repository**: [Gym Management Web](https://github.com/Hoangfff/gym-management-web) - Giao diện người dùng được xây dựng với React
+
+---
+
 # 🏋️ Gym & PT Management System
 
 Hệ thống quản lý phòng gym và huấn luyện viên cá nhân (Personal Trainer) được xây dựng bằng Spring Boot.
