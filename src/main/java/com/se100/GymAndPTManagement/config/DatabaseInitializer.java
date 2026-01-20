@@ -397,25 +397,25 @@ public class DatabaseInitializer implements CommandLineRunner {
                 (11, 'Slot 19:00-20:00', '19:00:00', '20:00:00', 1, NOW(), 'system', NOW(), 'system'),
                 (12, 'Slot 20:00-21:00', '20:00:00', '21:00:00', 1, NOW(), 'system', NOW(), 'system');
 
-                INSERT INTO available_slots (available_slot_id, pt_id, slot_id, day_of_week, is_available, created_at, created_by, updated_at, updated_by) VALUES
-                (1, 1, 1, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
-                (2, 1, 2, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
-                (3, 1, 3, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
-                (4, 1, 1, 'WEDNESDAY', 1, NOW(), 'system', NOW(), 'system'),
-                (5, 1, 2, 'WEDNESDAY', 1, NOW(), 'system', NOW(), 'system'),
-                (6, 1, 1, 'FRIDAY', 1, NOW(), 'system', NOW(), 'system'),
-                (7, 2, 6, 'TUESDAY', 1, NOW(), 'system', NOW(), 'system'),
-                (8, 2, 7, 'TUESDAY', 1, NOW(), 'system', NOW(), 'system'),
-                (9, 2, 8, 'TUESDAY', 1, NOW(), 'system', NOW(), 'system'),
-                (10, 2, 6, 'THURSDAY', 1, NOW(), 'system', NOW(), 'system'),
-                (11, 2, 7, 'THURSDAY', 1, NOW(), 'system', NOW(), 'system'),
-                (12, 2, 6, 'SATURDAY', 1, NOW(), 'system', NOW(), 'system'),
-                (13, 3, 9, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
-                (14, 3, 10, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
-                (15, 3, 11, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
-                (16, 3, 9, 'WEDNESDAY', 1, NOW(), 'system', NOW(), 'system'),
-                (17, 3, 10, 'WEDNESDAY', 1, NOW(), 'system', NOW(), 'system'),
-                (18, 3, 9, 'FRIDAY', 1, NOW(), 'system', NOW(), 'system');
+                INSERT INTO available_slots (available_slot_id, pt_id, user_id, slot_id, day_of_week, is_available, created_at, created_by, updated_at, updated_by) VALUES
+                (1, 1, 2, 1, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
+                (2, 1, 2, 2, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
+                (3, 1, 2, 3, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
+                (4, 1, 2, 1, 'WEDNESDAY', 1, NOW(), 'system', NOW(), 'system'),
+                (5, 1, 2, 2, 'WEDNESDAY', 1, NOW(), 'system', NOW(), 'system'),
+                (6, 1, 2, 1, 'FRIDAY', 1, NOW(), 'system', NOW(), 'system'),
+                (7, 2, 3, 6, 'TUESDAY', 1, NOW(), 'system', NOW(), 'system'),
+                (8, 2, 3, 7, 'TUESDAY', 1, NOW(), 'system', NOW(), 'system'),
+                (9, 2, 3, 8, 'TUESDAY', 1, NOW(), 'system', NOW(), 'system'),
+                (10, 2, 3, 6, 'THURSDAY', 1, NOW(), 'system', NOW(), 'system'),
+                (11, 2, 3, 7, 'THURSDAY', 1, NOW(), 'system', NOW(), 'system'),
+                (12, 2, 3, 6, 'SATURDAY', 1, NOW(), 'system', NOW(), 'system'),
+                (13, 3, 4, 9, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
+                (14, 3, 4, 10, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
+                (15, 3, 4, 11, 'MONDAY', 1, NOW(), 'system', NOW(), 'system'),
+                (16, 3, 4, 9, 'WEDNESDAY', 1, NOW(), 'system', NOW(), 'system'),
+                (17, 3, 4, 10, 'WEDNESDAY', 1, NOW(), 'system', NOW(), 'system'),
+                (18, 3, 4, 9, 'FRIDAY', 1, NOW(), 'system', NOW(), 'system');
                 """;
 
         executeSqlStatements(sql);
